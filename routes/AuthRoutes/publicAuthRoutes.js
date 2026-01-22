@@ -27,7 +27,6 @@ router.post("/admin/register", async (req, res) => {
   }
 });
 
-// Admin-Login
 router.post("/admin/login", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
@@ -49,14 +48,12 @@ router.post("/admin/login", async (req, res) => {
     if (!valid)
       return res.status(401).json({ error: "Ungültige Anmeldeinformationen" });
 
-    // ✅ JWT erzeugen
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role_id },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    // ✅ Token + Message zurückgeben
     res.json({ message: "Admin-Login erfolgreich", token });
   } catch (error) {
     console.error("Admin-Anmeldefehler:", error);
@@ -114,7 +111,7 @@ router.post("/register", async (req, res) => {
   }
 
   try {
-    const role_id = 2; // Standardmäßig auf "User" setzen
+    const role_id = 2;
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 

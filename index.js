@@ -13,9 +13,6 @@ dotenv.config();
 
 const routeMap = new Map();
 
-/* =========================
-   🎨 COLORS (ANSI)
-========================= */
 const COLORS = {
   reset: "\x1b[0m",
   cyan: "\x1b[36m",
@@ -35,12 +32,10 @@ const METHOD_COLOR = COLORS.magenta;
 
 const BOX_WIDTH = 80;
 
-/* entfernt ANSI-Farbcodes */
 function stripAnsi(str) {
   return str.replace(/\x1b\[[0-9;]*m/g, "");
 }
 
-/* entfernt Emojis + Sonderbreite */
 function stripWide(str) {
   return stripAnsi(str).replace(/[^\x00-\x7F]/g, "");
 }
@@ -69,16 +64,11 @@ function box(lines = []) {
   console.log(BOX_COLOR + "╚" + "═".repeat(BOX_WIDTH) + "╝" + COLORS.reset);
 }
 
-/* =========================
-   🔍 EXTRACT ROUTES FUNCTION
-========================= */
 function extractRoutes(router, prefix = "", isProtected = false) {
   const routes = [];
 
-  // Express router stack durchgehen
   router.stack?.forEach((middleware) => {
     if (middleware.route) {
-      // Route Handler
       const methods = Object.keys(middleware.route.methods);
       methods.forEach((method) => {
         routes.push({
@@ -90,7 +80,6 @@ function extractRoutes(router, prefix = "", isProtected = false) {
         });
       });
     } else if (middleware.name === "router" && middleware.regexp) {
-      // Nested Router
       const nestedPrefix = extractPrefixFromRegex(middleware.regexp);
       const nestedRoutes = extractRoutes(
         middleware.handle,
@@ -109,15 +98,9 @@ function extractPrefixFromRegex(regexp) {
   return match ? "/" + match[1] : "";
 }
 
-/* =========================
-   🌐 APP SETUP
-========================= */
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --------------------
-// 🔧 GLOBAL CORS CONFIG
-// --------------------
 const allowedOrigins = [
   "http://localhost:5173",
   "https://dashboard.properform.app",
@@ -142,23 +125,16 @@ app.use(
 
 app.use(express.json());
 
-// --------------------
-// 🔓 PUBLIC ROUTES
-// --------------------
+// Public routes
 app.use("/users", publicUserRoutes);
 app.use("/trainers", publicTrainerRoutes);
 app.use("/auth", publicAuthRoutes);
 
-// --------------------
-// 🔐 PROTECTED ROUTES
-// --------------------
+// Protected routes
 app.use("/users", protectedUserRoutes);
 app.use("/system", protectedSystemRoutes);
 app.use("/trainers", privateTrainerRoutes);
 
-// --------------------
-// 🧪 TEST ROUTE
-// --------------------
 app.get("/", (req, res) => {
   res.json({
     status: "API online",
@@ -166,9 +142,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// --------------------
-// ❌ 404 HANDLER
-// --------------------
 app.use((req, res) => {
   const methods = routeMap.get(req.path);
 
@@ -187,15 +160,9 @@ app.use((req, res) => {
   });
 });
 
-// --------------------
-// 🚀 START SERVER
-// --------------------
 app.listen(PORT, "0.0.0.0", () => {
   console.clear();
 
-  /* =========================
-     🎨 STARTUP LOG
-  ========================= */
   box([
     `${TITLE_COLOR}ProPerform API${TEXT_COLOR}`,
     "",
@@ -224,12 +191,8 @@ app.listen(PORT, "0.0.0.0", () => {
     "Ready to handle requests",
   ]);
 
-  /* =========================
-     📋 ROUTE LISTING
-  ========================= */
   console.log(`\n${COLORS.blue}📋 REGISTERED ROUTES:${COLORS.reset}\n`);
 
-  // Alle Routes sammeln
   const allRoutes = [];
 
   allRoutes.push(...extractRoutes(publicUserRoutes, "/users", false));
@@ -239,13 +202,11 @@ app.listen(PORT, "0.0.0.0", () => {
   allRoutes.push(...extractRoutes(protectedSystemRoutes, "/system", true));
   allRoutes.push(...extractRoutes(privateTrainerRoutes, "/trainers", true));
 
-  // Sortieren nach Path, dann Method
   allRoutes.sort((a, b) => {
     if (a.path !== b.path) return a.path.localeCompare(b.path);
     return a.method.localeCompare(b.method);
   });
 
-  // Duplikate entfernen
   const uniqueRoutes = [];
   const seen = new Set();
   allRoutes.forEach((route) => {
@@ -256,7 +217,6 @@ app.listen(PORT, "0.0.0.0", () => {
     }
   });
 
-  // Gruppieren nach Public/Protected
   const publicRoutes = uniqueRoutes.filter((r) => !r.protected);
   const protectedRoutes = uniqueRoutes.filter((r) => r.protected);
 
@@ -264,11 +224,9 @@ app.listen(PORT, "0.0.0.0", () => {
     if (!routeMap.has(path)) {
       routeMap.set(path, new Set());
     }
-
     routeMap.get(path).add(method);
   });
 
-  // PUBLIC ROUTES
   if (publicRoutes.length > 0) {
     console.log(`${COLORS.green}🔓 PUBLIC ROUTES:${COLORS.reset}`);
     publicRoutes.forEach((route) => {
@@ -280,7 +238,6 @@ app.listen(PORT, "0.0.0.0", () => {
     console.log();
   }
 
-  // PROTECTED ROUTES
   if (protectedRoutes.length > 0) {
     console.log(
       `${COLORS.magenta}🔐 PROTECTED ROUTES (require auth):${COLORS.reset}`
