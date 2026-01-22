@@ -3,28 +3,36 @@ import mysql from "mysql2/promise";
 import { db } from "../../db.js";
 import { requireAuth } from "../../middleware/auth.js";
 import { generateTrainerCode } from "../../functions/TrainerFunctions.js";
+import { requireRole } from "../../middleware/role.js";
 
 const router = express.Router();
 
-router.patch("/:id/regenerateCode", async (req, res) => {
-  const { id } = req.params;
+router.patch(
+  "/:id/regenerateCode",
+  requireRole("trainer"),
+  async (req, res) => {
+    const { id } = req.params;
 
-  try {
-    const newCode = generateTrainerCode();
+    try {
+      const newCode = generateTrainerCode();
 
-    const [result] = await db.execute(
-      "UPDATE trainers SET invite_code = ? WHERE tid = ?",
-      [newCode, id],
-    );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Trainer nicht gefunden." });
+      const [result] = await db.execute(
+        "UPDATE trainers SET invite_code = ? WHERE tid = ?",
+        [newCode, id],
+      );
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Trainer nicht gefunden." });
+      }
+
+      res.json({
+        message: "Einladungscode erfolgreich aktualisiert.",
+        newCode,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-
-    res.json({ message: "Einladungscode erfolgreich aktualisiert.", newCode });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+  },
+);
 
 router.post("/link-athlete", async (req, res) => {
   const { invite_code, athlete_id } = req.body;

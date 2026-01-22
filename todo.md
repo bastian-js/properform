@@ -10,7 +10,7 @@
   - Trainer können sich nicht authentifizieren
   - **Lösung:** `POST /auth/trainerLogin` mit Email/Passwort
 
-- [ ] **NO Role-Check auf `/trainer/createTrainer`** – Jeder mit JWT kann Trainer erstellen
+- [x] **NO Role-Check auf `/trainer/createTrainer`** – Jeder mit JWT kann Trainer erstellen
   - **Lösung:** `requireRole(OWNER)` Middleware hinzufügen
 
 - [ ] **NO Role-Check auf `/admin/deleteUser`** – Jeder mit JWT kann User löschen

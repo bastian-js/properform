@@ -3,14 +3,15 @@ import bcrypt from "bcrypt";
 import { db } from "../../db.js";
 import jwt from "jsonwebtoken";
 
+import { requireRole } from "../../middleware/role.js";
+
 const router = express.Router();
 
 const saltRounds = 10;
 
-router.post("/admin/register", async (req, res) => {
-  //const { firstname, birthdate, email, password_hash } = req.body;
-
+router.post("/admin/register", requireRole("owner"), async (req, res) => {
   const { firstname, birthdate, email, password_hash } = req.body;
+
   if (!firstname || !birthdate || !email || !password_hash)
     return res.status(400).json({ error: "Pflichtfelder fehlen" });
 
@@ -95,7 +96,8 @@ router.post("/register", async (req, res) => {
   }
 
   const passwordRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]{8,}$/;
+
   if (!passwordRegex.test(password)) {
     return res.status(400).json({
       error:
