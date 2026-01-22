@@ -50,7 +50,7 @@ router.post("/admin/login", async (req, res) => {
       return res.status(401).json({ error: "Ungültige Anmeldeinformationen" });
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: "admin" },
+      { id: user.id, email: user.email, role: "owner" },
       process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
