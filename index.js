@@ -108,6 +108,8 @@ const allowedOrigins = [
   "https://dashboard.properform.app",
   "https://properform.app",
   "https://www.properform.app",
+  "http://localhost:8081",
+  "http://localhost:8080",
 ];
 
 app.use(
