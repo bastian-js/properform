@@ -2,6 +2,8 @@ node_module
 
 .env
 
+logs
+
 # macOS metadata
 .DS_Store
 ._*
