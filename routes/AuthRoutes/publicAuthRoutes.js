@@ -66,7 +66,7 @@ router.post(
           .json({ error: "Ungültige Anmeldeinformationen" });
 
       const token = jwt.sign(
-        { id: user.id, email: user.email, role: "owner" },
+        { id: user.uid, email: user.email, role: "owner" },
         process.env.JWT_SECRET,
         { expiresIn: "1h" },
       );
@@ -145,9 +145,9 @@ router.post(
         .update(rawCode)
         .digest("hex");
 
-      const expiresIn = 15 * 60 * 1000;
+      const expiresIn = 15 * 60 * 1000; // 15 minuten
 
-      const expiresAt = new Date(Date.now() + expiresIn);
+      const expiresAt = new Date(Date.now() + expiresIn); // datum + 15 minuten
 
       const [result] = await db.execute(
         "INSERT INTO users (firstname, birthdate, email, password_hash, weight, height, gender, onboarding_completed, fitness_level, training_frequency, primary_goal, role_id, email_verification_code, email_verification_expires) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -311,7 +311,7 @@ router.post(
       const tokenExpiresIn = stayLoggedInSafe ? "60d" : "3d";
 
       const token = jwt.sign(
-        { id: user.id, role: "user" },
+        { id: user.uid, role: "user" },
         process.env.JWT_SECRET,
         { expiresIn: tokenExpiresIn },
       );
@@ -319,7 +319,7 @@ router.post(
       return res.json({
         message: "Login erfolgreich",
         token,
-        uid: user.id,
+        uid: user.uid,
       });
     } catch (err) {
       console.error("Fehler beim Login:", err);
@@ -386,5 +386,57 @@ router.post(
     }
   },
 );
+
+router.post("/check-verification-code", async (req, res) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    return res.status(400).json({
+      error: "E-Mail und Code sind erforderlich",
+    });
+  }
+
+  try {
+    const [rows] = await db.execute(
+      `SELECT email_verification_code, email_verification_expires
+       FROM users
+       WHERE email = ?
+       LIMIT 1`,
+      [email],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        error: "Kein Benutzer mit dieser E-Mail gefunden",
+      });
+    }
+
+    const { email_verification_code, email_verification_expires } = rows[0];
+
+    const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+
+    if (email_verification_code !== codeHash) {
+      return res.status(401).json({
+        error: "Verifikationscode ist ungültig",
+      });
+    }
+
+    const expiresAt = new Date(email_verification_expires);
+
+    if (expiresAt <= new Date()) {
+      return res.status(410).json({
+        error: "Verifikationscode ist abgelaufen",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Verifikationscode gültig",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: "Fehler bei der Code-Überprüfung",
+    });
+  }
+});
 
 export default router;
