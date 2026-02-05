@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import publicUserRoutes from "./routes/UserRoutes/publicUserRoutes.js";
 import protectedUserRoutes from "./routes/UserRoutes/protectedUserRoutes.js";
+import publicSystemRoutes from "./routes/SystemRoutes/publicSystemRoutes.js";
 import protectedSystemRoutes from "./routes/SystemRoutes/ProtectedSystemRoutes.js";
 import publicTrainerRoutes from "./routes/TrainerRoutes/publicTrainerRoutes.js";
 import privateTrainerRoutes from "./routes/TrainerRoutes/privateTrainerRoutes.js";
