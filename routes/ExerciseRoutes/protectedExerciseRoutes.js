@@ -1,12 +1,9 @@
 import express from "express";
-import bcrypt from "bcrypt";
 import { db } from "../../db.js";
-import jwt from "jsonwebtoken";
 
 import { requireRole } from "../../middleware/role.js";
 import { createRateLimiter } from "../../middleware/rate.js";
 
-import crypto from "crypto";
 import { requireAuth } from "../../middleware/auth.js";
 
 const router = express.Router();
@@ -76,6 +73,30 @@ router.post(
       return res.status(201).json({ status: "ok", eid: result.insertId });
     } catch (err) {
       console.error("create exercise failed: ", err);
+      return res.status(500).json({ error: "internal server error" });
+    }
+  },
+);
+
+router.get(
+  "/exercises",
+  requireAuth,
+  requireRole("owner"),
+  async (req, res) => {
+    try {
+      const [rows] = await db.query(
+        `
+          SELECT
+            eid,
+            name,
+            created_by
+          FROM exercises
+          ORDER BY created_at DESC
+        `,
+      );
+
+      return res.json({ count: rows.length, exercises: rows });
+    } catch (err) {
       return res.status(500).json({ error: "internal server error" });
     }
   },
