@@ -41,4 +41,32 @@ router.post(
   },
 );
 
+router.get("/weight", requireAuth, requireRole("user"), async (req, res) => {
+  try {
+    const uid = req.user.id;
+
+    const [rows] = await db.query(
+      `
+            SELECT 
+            wlid, 
+            weight_kg, 
+            measured_at, 
+            notes 
+            FROM weight_logs
+            WHERE uid = ?
+            ORDER BY measured_at DESC
+        `,
+      [uid],
+    );
+
+    return res.status(200).json({
+      count: rows.length,
+      logs: rows,
+    });
+  } catch (err) {
+    console.error("get weight logs failed:", err);
+    return res.status(500).json({ error: "internal server error" });
+  }
+});
+
 export default router;
