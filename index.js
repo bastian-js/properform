@@ -177,6 +177,26 @@ app.use((req, res) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  if (err.message === "File already exists") {
+    return res.status(409).json({
+      message: "File already exists",
+    });
+  }
+
+  if (err.message === "Unsupported file type") {
+    return res.status(400).json({
+      message: "Unsupported file type",
+    });
+  }
+
+  console.error(err);
+
+  res.status(500).json({
+    message: "Internal server error",
+  });
+});
+
 app.listen(PORT, "0.0.0.0", () => {
   console.clear();
 
