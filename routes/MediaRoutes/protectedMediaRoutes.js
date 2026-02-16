@@ -9,6 +9,9 @@ import { createRateLimiter } from "../../middleware/rate.js";
 
 import { requireAuth } from "../../middleware/auth.js";
 
+import fs from "fs";
+import path from "path";
+
 const router = express.Router();
 
 router.post(
@@ -102,7 +105,38 @@ router.delete("/:mid", requireAuth, requireRole("owner"), async (req, res) => {
   try {
     const { mid } = req.params;
 
-    const [result] = await db.query(
+    const [rows] = await db.query(
+      `
+        SELECT filename, type
+        FROM media
+        WHERE mid = ?
+      `,
+      [mid],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "media not found" });
+    }
+
+    const media = rows[0];
+
+    const folder = media.type === "image" ? "images" : "videos";
+
+    const filePath = path.join(
+      "/var/www/html/media.properform.app",
+      folder,
+      media.filename,
+    );
+
+    try {
+      await fs.unlink(filePath);
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        throw err;
+      }
+    }
+
+    await db.query(
       `
         DELETE FROM media
         WHERE mid = ?
@@ -110,14 +144,7 @@ router.delete("/:mid", requireAuth, requireRole("owner"), async (req, res) => {
       [mid],
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "media not found" });
-    }
-
-    return res.json({
-      status: "ok",
-      message: `media with id ${mid} deleted`,
-    });
+    return res.json({ status: "ok", message: `media with id ${mid} deleted` });
   } catch (err) {
     console.error("delete media failed: ", err);
     return res.status(500).json({ error: "internal server error" });
