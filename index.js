@@ -10,6 +10,8 @@ import privateTrainerRoutes from "./routes/TrainerRoutes/privateTrainerRoutes.js
 import publicAuthRoutes from "./routes/AuthRoutes/publicAuthRoutes.js";
 import weightLogRoutes from "./routes/UserRoutes/weightLogRoutes.js";
 import protectedExerciseRoutes from "./routes/ExerciseRoutes/protectedExerciseRoutes.js";
+import protectedMediaRoutes from "./routes/MediaRoutes/protectedMediaRoutes.js";
+
 import { requestLogger } from "./logger.js";
 
 dotenv.config();
@@ -146,6 +148,7 @@ app.use("/system", protectedSystemRoutes);
 app.use("/trainers", privateTrainerRoutes);
 app.use("/logs", weightLogRoutes);
 app.use("/admin", protectedExerciseRoutes);
+app.use("/media", protectedMediaRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -215,6 +218,7 @@ app.listen(PORT, "0.0.0.0", () => {
   allRoutes.push(...extractRoutes(privateTrainerRoutes, "/trainers", true));
   allRoutes.push(...extractRoutes(weightLogRoutes, "/logs", true));
   allRoutes.push(...extractRoutes(protectedExerciseRoutes, "/admin", true));
+  allRoutes.push(...extractRoutes(protectedMediaRoutes, "/media", true));
 
   allRoutes.sort((a, b) => {
     if (a.path !== b.path) return a.path.localeCompare(b.path);
