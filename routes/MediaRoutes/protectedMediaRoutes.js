@@ -46,7 +46,7 @@ router.post(
             type,
             filename,
             url,
-            size,
+            size
           )
           VALUES (?, ?, ?, ?)
         `,
