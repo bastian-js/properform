@@ -9,7 +9,7 @@ import { createRateLimiter } from "../../middleware/rate.js";
 
 import { requireAuth } from "../../middleware/auth.js";
 
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 
 const router = express.Router();
