@@ -219,9 +219,6 @@ router.post("/reset-password", async (req, res) => {
 
     const resetLink = `https://account.properform.app/reset-password/${rawToken}`;
 
-    // ✅ DEV ONLY → extrem praktisch 😄
-    console.log("RESET TOKEN:", rawToken);
-
     await mailer.sendMail({
       from: '"ProPerform" <no-reply@properform.app>',
       to: email,
