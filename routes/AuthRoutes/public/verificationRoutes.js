@@ -2,6 +2,7 @@ import express from "express";
 import crypto from "crypto";
 import { db } from "../../../db.js";
 import { mailer } from "../../../functions/mailer.js";
+import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 
 const router = express.Router();
