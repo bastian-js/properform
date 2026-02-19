@@ -178,6 +178,95 @@ If you did not request this code, you can safely ignore this email.
   }
 });
 
+import crypto from "crypto";
+
+router.post("/reset-password", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      error: "email required."
+    });
+  }
+
+  try {
+    const [rows] = await db.query(
+      `SELECT firstname FROM users WHERE email = ?`,
+      [email]
+    );
+
+    // ✅ Kein Email Enumeration Leak
+    const firstname = rows.length ? rows[0].firstname : "there";
+
+    // ✅ Alte Tokens löschen
+    await db.query(
+      `DELETE FROM password_resets WHERE email = ?`,
+      [email]
+    );
+
+    // ✅ Neuer Token
+    const rawToken = crypto.randomBytes(32).toString("hex");
+
+    // ✅ Token hashen
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+
+    const expires = new Date(Date.now() + 15 * 60 * 1000);
+
+    await db.query(
+      `INSERT INTO password_resets (email, token, expires_at)
+       VALUES (?, ?, ?)`,
+      [email, hashedToken, expires]
+    );
+
+    const resetLink = `https://account.properform.app/reset-password/${rawToken}`;
+
+    // ✅ DEV ONLY → extrem praktisch 😄
+    console.log("RESET TOKEN:", rawToken);
+
+    await mailer.sendMail({
+      from: '"ProPerform" <no-reply@properform.app>',
+      to: email,
+      subject: "Reset your password",
+
+      text: `
+Hello ${firstname},
+
+You requested a password reset for your ProPerform account.
+
+Reset your password here:
+${resetLink}
+
+Important: This link is valid for 15 minutes.
+
+If you did not request this reset, simply ignore this email.
+`,
+
+      html: `
+        <h2>Password Reset</h2>
+        <p>Hello ${firstname},</p>
+        <p>You requested a password reset.</p>
+        <a href="${resetLink}">Reset Password</a>
+        <p>This link is valid for 15 minutes.</p>
+      `
+    });
+
+    // ✅ Immer gleiche Antwort → Security Best Practice
+    return res.status(200).json({
+      message: "If an account exists, a reset email has been sent."
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      error: "failed to send reset email.",
+      details: err.message
+    });
+  }
+});
+
+
 router.post("/reset-password/:token", async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
