@@ -90,6 +90,7 @@ app.set("trust proxy", true);
 const allowedOrigins = [
   "http://localhost:5173",
   "https://dashboard.properform.app",
+  "https://docs.properform.app",
   "https://account.properform.app",
   "https://properform.app",
   "https://www.properform.app",
