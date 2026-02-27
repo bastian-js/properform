@@ -11,7 +11,7 @@ router.get(
   createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }),
   async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.uid;
 
       console.log("JWT USER:", req.user);
 
