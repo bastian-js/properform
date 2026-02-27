@@ -6,6 +6,8 @@ import { createRateLimiter } from "../../../middleware/rate.js";
 import { requireAuth } from "../../../middleware/auth.js";
 import bcrypt from "bcrypt";
 
+const SALT_RONDS = 10;
+
 const router = express.Router();
 
 router.post(
