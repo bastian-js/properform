@@ -15,8 +15,8 @@ router.post(
   "/upload",
   requireAuth,
   requireRole("owner"),
-  upload.single("file"),
   createRateLimiter({ windowMs: 15 * 60 * 1000, max: 30 }),
+  upload.single("file"),
   async (req, res) => {
     try {
       if (!req.file) {
@@ -57,7 +57,7 @@ router.post(
         message: "File uploaded successfully",
         filename: req.file.filename,
         url,
-        mid: result.mid,
+        mid: result.insertId,
       });
     } catch (err) {
       if (

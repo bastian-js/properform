@@ -11,7 +11,7 @@ const router = express.Router();
 router.get(
   "/all",
   requireAuth,
-  requireRole("user"),
+  requireRole("user", "owner"),
   createRateLimiter({ windowMs: 15 * 60 * 1000, max: 100 }),
   async (req, res) => {
     try {

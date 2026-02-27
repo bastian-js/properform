@@ -14,6 +14,9 @@ router.delete(
   async (req, res) => {
     try {
       const { eid } = req.params;
+      if (!Number.isInteger(eid)) {
+        return res.status(400).json({ error: "invalid exercise id" });
+      }
 
       const [result] = await db.query(
         `

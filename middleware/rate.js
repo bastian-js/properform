@@ -13,7 +13,7 @@ export function createRateLimiter({
 
     keyGenerator: (req) => {
       if (key === "user" && req.user?.id) {
-        return `user:${req.user.id}`;
+        return `user:${req.user.uid}`;
       }
 
       return ipKeyGenerator(req);

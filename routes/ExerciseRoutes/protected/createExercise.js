@@ -15,7 +15,7 @@ router.post(
   createRateLimiter({ windowMs: 15 * 60 * 1000, max: 30 }),
   async (req, res) => {
     try {
-      const createdBy = req.user.id;
+      const createdBy = req.user.uid;
 
       const {
         name,

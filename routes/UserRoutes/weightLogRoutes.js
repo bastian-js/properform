@@ -15,7 +15,7 @@ router.post(
   createRateLimiter({ windowMs: 15 * 60 * 1000, max: 20 }),
   async (req, res) => {
     try {
-      const uid = req.user.id;
+      const uid = req.user.uid;
       const { weight_kg, notes } = req.body;
 
       if (weight_kg === undefined)
@@ -43,7 +43,7 @@ router.post(
 
 router.get("/weight", requireAuth, requireRole("user"), async (req, res) => {
   try {
-    const uid = req.user.id;
+    const uid = req.user.uid;
 
     const [rows] = await db.query(
       `

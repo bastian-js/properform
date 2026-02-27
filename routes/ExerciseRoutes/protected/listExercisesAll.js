@@ -10,7 +10,7 @@ const router = express.Router();
 router.get(
   "/exercises/all",
   requireAuth,
-  requireRole("user"),
+  requireRole("user", "owner"),
   async (req, res) => {
     try {
       const page = Math.max(1, parseInt(req.query.page) || 1);
