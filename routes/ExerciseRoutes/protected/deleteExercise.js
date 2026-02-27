@@ -13,7 +13,7 @@ router.delete(
   requireRole("owner"),
   async (req, res) => {
     try {
-      const { eid } = req.params;
+      const eid = Number(req.params.eid);
       if (!Number.isInteger(eid)) {
         return res.status(400).json({ error: "invalid exercise id" });
       }
