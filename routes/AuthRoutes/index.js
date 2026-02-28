@@ -3,6 +3,7 @@ import adminAuthRoutes from "./public/adminAuthRoutes.js";
 import userAuthRoutes from "./public/userAuthRoutes.js";
 import verificationRoutes from "./public/verificationRoutes.js";
 import passwordRoutes from "./public/passwordRoutes.js";
+import trainerAuthRoutes from "./public/trainerAuthRoutes.js";
 
 const router = express.Router();
 
@@ -10,5 +11,6 @@ router.use(adminAuthRoutes);
 router.use(userAuthRoutes);
 router.use(verificationRoutes);
 router.use(passwordRoutes);
+router.use(trainerAuthRoutes);
 
 export default router;

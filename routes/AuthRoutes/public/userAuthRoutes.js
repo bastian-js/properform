@@ -30,6 +30,7 @@ router.post(
       training_frequency,
       primary_goal,
       stayLoggedIn,
+      invite_code,
     } = req.body;
 
     if (
@@ -45,9 +46,9 @@ router.post(
       training_frequency == null ||
       !primary_goal
     ) {
-      return res
-        .status(400)
-        .json({ error: "please fill all required fields." });
+      return res.status(400).json({
+        error: "please fill all required fields.",
+      });
     }
 
     const passwordRegex =
@@ -68,21 +69,25 @@ router.post(
       });
     }
 
+    const connection = await db.getConnection();
+
     try {
+      await connection.beginTransaction();
+
       const role_id = 2;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       const rawCode = String(crypto.randomInt(100000, 1000000));
-
       const codeHash = crypto
         .createHash("sha256")
         .update(rawCode)
         .digest("hex");
-
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-      const [result] = await db.execute(
-        "INSERT INTO users (firstname, birthdate, email, password_hash, weight, height, gender, onboarding_completed, fitness_level, training_frequency, primary_goal, role_id, email_verification_code, email_verification_expires) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      const [result] = await connection.execute(
+        `INSERT INTO users 
+        (firstname, birthdate, email, password_hash, weight, height, gender, onboarding_completed, fitness_level, training_frequency, primary_goal, role_id, email_verification_code, email_verification_expires) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           firstname,
           birthdate,
@@ -101,47 +106,72 @@ router.post(
         ],
       );
 
-      const token = jwt.sign({ uid: result.insertId }, process.env.JWT_SECRET, {
-        expiresIn: stayLoggedIn ? "60d" : "3d",
-      });
+      const newUserId = result.insertId;
 
-      try {
-        const { subject, text, html } = buildVerificationEmail(
-          firstname,
-          rawCode,
+      if (invite_code?.trim()) {
+        const [trainerRows] = await connection.execute(
+          "SELECT tid FROM trainers WHERE invite_code = ?",
+          [invite_code.trim()],
         );
 
-        mailer
-          .sendMail({
-            from: '"ProPerform" <no-reply@properform.app>',
-            to: email,
-            subject: subject,
-            text: text,
-            html: html,
-          })
-          .catch((err) => {
-            console.error("failed to send verification email:", err);
+        if (trainerRows.length === 0) {
+          await connection.rollback();
+          return res.status(400).json({
+            error: "invalid invite code.",
           });
-      } catch (err) {
-        return res.status(201).json({
-          message: "user created but verification email failed.",
-          error: err.message,
+        }
+
+        const trainerId = trainerRows[0].tid;
+
+        await connection.execute(
+          "INSERT INTO trainer_athletes (tid, uid, assigned_date) VALUES (?, ?, CURDATE())",
+          [trainerId, newUserId],
+        );
+      }
+
+      await connection.commit();
+      connection.release();
+
+      const token = jwt.sign(
+        { uid: newUserId, role: "user" },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: stayLoggedIn ? "60d" : "3d",
+        },
+      );
+
+      const { subject, text, html } = buildVerificationEmail(
+        firstname,
+        rawCode,
+      );
+
+      mailer
+        .sendMail({
+          from: '"ProPerform" <no-reply@properform.app>',
+          to: email,
+          subject,
+          text,
+          html,
+        })
+        .catch(console.error);
+
+      return res.status(201).json({
+        message: "user successfully created.",
+        token,
+        uid: newUserId,
+      });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+
+      if (error.code === "ER_DUP_ENTRY") {
+        return res.status(409).json({
+          error: "email already registered.",
         });
       }
 
-      res.status(201).json({
-        message: "user successfully created.",
-        token,
-        uid: result.insertId,
-      });
-    } catch (error) {
-      if (error.code === "ER_DUP_ENTRY") {
-        return res.status(409).json({ error: "email already registered." });
-      }
-
-      res.status(500).json({
-        message: "failed to create user.",
-        error: error.message,
+      return res.status(500).json({
+        error: "registration failed.",
       });
     }
   },
