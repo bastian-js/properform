@@ -7,7 +7,11 @@ import { requireRole } from "../../../middleware/role.js";
 import { createRateLimiter } from "../../../middleware/rate.js";
 import { requireAuth } from "../../../middleware/auth.js";
 
+import { generateTrainerCode } from "../../../helpers/TrainerFunctions.js";
+
 const router = express.Router();
+
+const SALT_ROUNDS = 10;
 
 router.post(
   "/trainers/register",
