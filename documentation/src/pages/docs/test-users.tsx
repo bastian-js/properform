@@ -11,13 +11,20 @@ export default function TestUsers() {
   const [requestState, setRequestState] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
+  const [hasRegistered, setHasRegistered] = useState(false);
+
   const stateTimeoutRef = useRef<number | null>(null);
 
-  const testUserName = "Testuser";
-  const randomInt = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+  const generateUser = () => {
+    const testUserName = "Testuser";
+    const randomInt = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+    const fullName = `${testUserName}${randomInt}`;
+    const email = `${fullName}@test.com`;
+    return { fullName, email };
+  };
 
-  const fullName = `${testUserName}${randomInt}`;
-  const testUserEmail = `${fullName}@test.com`;
+  const [loginUser, setLoginUser] = useState(() => generateUser());
+  const [registerUser, setRegisterUser] = useState(() => generateUser());
 
   useEffect(() => {
     return () => {
@@ -28,9 +35,7 @@ export default function TestUsers() {
   }, []);
 
   const handleRegisterRequest = async () => {
-    if (requestState === "loading") {
-      return;
-    }
+    if (requestState === "loading") return;
 
     if (stateTimeoutRef.current) {
       window.clearTimeout(stateTimeoutRef.current);
@@ -46,9 +51,9 @@ export default function TestUsers() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          firstname: fullName,
+          firstname: registerUser.fullName,
           birthdate: "1995-04-12",
-          email: testUserEmail,
+          email: registerUser.email,
           password: "Demo1234!",
           weight: 82.5,
           height: 180.0,
@@ -62,11 +67,19 @@ export default function TestUsers() {
 
       if (result.ok) {
         const data = await result.json();
+
         setSuccessMessage(
-          `Test user registered successfully with email: ${testUserEmail}, Id: ${data.uid}`,
+          `Test user registered successfully with email: ${registerUser.email}, Id: ${data.uid}`,
         );
         setErrorMessage("");
         setRequestState("success");
+        setHasRegistered(true);
+
+        // Update login user to the registered user
+        setLoginUser(registerUser);
+        // Generate new register user for next registration
+        setRegisterUser(generateUser());
+
         stateTimeoutRef.current = window.setTimeout(() => {
           setRequestState("idle");
           stateTimeoutRef.current = null;
@@ -76,15 +89,17 @@ export default function TestUsers() {
         setErrorMessage(`Error registering test user: ${errorData.message}`);
         setSuccessMessage("");
         setRequestState("error");
+
         stateTimeoutRef.current = window.setTimeout(() => {
           setRequestState("idle");
           stateTimeoutRef.current = null;
         }, 5000);
       }
-    } catch (_error) {
+    } catch {
       setErrorMessage("Error registering test user: Network error.");
       setSuccessMessage("");
       setRequestState("error");
+
       stateTimeoutRef.current = window.setTimeout(() => {
         setRequestState("idle");
         stateTimeoutRef.current = null;
@@ -107,9 +122,9 @@ export default function TestUsers() {
       <CodeBlock
         language="http"
         code={`{
-  "firstname": "${fullName}",
+  "firstname": "${registerUser.fullName}",
   "birthdate": "1995-04-12",
-  "email": "${testUserEmail}",
+  "email": "${registerUser.email}",
   "password": "Demo1234!",
   "weight": 82.5,
   "height": 180.0,
@@ -138,76 +153,26 @@ export default function TestUsers() {
         variant="primary"
         disabled={requestState === "loading"}
       >
-        <span className="flex items-center">
-          <span>Register Test User</span>
-          {requestState !== "idle" && (
-            <span className="relative ml-2 h-4 w-4">
-              <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                  requestState === "loading"
-                    ? "opacity-100 scale-100"
-                    : "opacity-0 scale-75"
-                }`}
-                aria-hidden="true"
-              >
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-white" />
-              </span>
-              <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                  requestState === "success"
-                    ? "opacity-100 scale-100"
-                    : "opacity-0 scale-75"
-                }`}
-                aria-hidden="true"
-              >
-                <svg
-                  className="h-4 w-4 text-white"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 10.5l3 3 7-7" />
-                </svg>
-              </span>
-              <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                  requestState === "error"
-                    ? "opacity-100 scale-100"
-                    : "opacity-0 scale-75"
-                }`}
-                aria-hidden="true"
-              >
-                <svg
-                  className="h-4 w-4 text-white"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 5l10 10M15 5l-10 10" />
-                </svg>
-              </span>
-            </span>
-          )}
-        </span>
+        Register Test User
       </Button>
 
-      <Heading>User - Login</Heading>
-      <CodeBlock
-        language="http"
-        code={`{
-  "email": "${testUserEmail}",
-  "password": "Demo1234!",
+      {hasRegistered && (
+        <>
+          <Heading>User - Login</Heading>
+          <CodeBlock
+            language="http"
+            code={`{
+  "email": "${loginUser.email}",
+  "password": "Demo1234!"
 }`}
-      />
+          />
+        </>
+      )}
 
       <Heading>Notes</Heading>
-      <Text>Login and register requests are the same test user.</Text>
+      <Text>
+        Login and register requests always use the same generated test user.
+      </Text>
     </div>
   );
 }

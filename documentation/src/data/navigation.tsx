@@ -31,7 +31,7 @@ export const navLinks: NavLink[] = [
     icon: <BookOpen size={20} />,
     label: "Dokumentation",
     subLinks: [
-      { to: "/docs/request-bodys", label: "Request Bodys" },
+      { to: "/docs/test-users", label: "Test Users" },
       { to: "/docs/error-responses", label: "Error Responses" },
     ],
   },

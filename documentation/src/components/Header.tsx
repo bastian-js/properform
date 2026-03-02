@@ -7,7 +7,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-64 right-0 z-40 bg-blue-600 text-white px-6 py-3 shadow-md flex justify-between items-center transition-all duration-300">
+      <header className="bg-blue-600 text-white px-6 py-3 shadow-md flex justify-between items-center transition-all duration-300 flex-shrink-0">
         <h2 className="text-lg font-semibold">Dokumentation</h2>
         <button
           onClick={() => setSearchOpen(true)}
@@ -18,7 +18,6 @@ export default function Header() {
         </button>
       </header>
 
-      <div className="h-16" />
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );

@@ -1,13 +1,35 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 
 import { navLinks, type NavLink, type SubLink } from "../data/navigation";
 
 export default function Sidebar() {
   const { pathname } = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem("sidebarCollapsed");
+    return saved ? JSON.parse(saved) : false;
+  });
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+
+  useEffect(() => {
+    localStorage.setItem("sidebarCollapsed", JSON.stringify(collapsed));
+  }, [collapsed]);
+
+  useEffect(() => {
+    const handleSidebarStateChange = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setCollapsed(customEvent.detail.collapsed);
+    };
+
+    window.addEventListener("sidebarStateChanged", handleSidebarStateChange);
+    return () => {
+      window.removeEventListener(
+        "sidebarStateChanged",
+        handleSidebarStateChange,
+      );
+    };
+  }, []);
 
   const toggleGroup = (label: string) => {
     setExpandedGroups((prev) =>
@@ -128,7 +150,7 @@ export default function Sidebar() {
 
   return (
     <div
-      className={`fixed top-0 left-0 h-screen bg-gray-900 border-r border-gray-800 p-4 flex flex-col transition-all duration-300 ${
+      className={`h-screen bg-gray-900 border-r border-gray-800 p-4 flex flex-col transition-all duration-300 flex-shrink-0 ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
@@ -146,7 +168,9 @@ export default function Sidebar() {
 
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="cursor-pointer absolute bottom-4 right-4 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full transition"
+        className={`cursor-pointer bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full transition mt-auto ${
+          collapsed ? "self-center" : "self-end"
+        }`}
       >
         {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
       </button>

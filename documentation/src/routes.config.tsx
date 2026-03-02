@@ -49,11 +49,16 @@ import PostLogsWeight from "./pages/api-reference/weight/post-logs-weight";
 
 import RequestBodys from "./pages/docs/request-bodys";
 import ErrorResponses from "./pages/docs/error-responses";
+import TestUsers from "./pages/docs/test-users";
+
+import Settings from "./pages/settings";
 
 export const apiRoutes = [
   // docs
+  { path: "settings", element: <Settings /> },
   { path: "docs/request-bodys", element: <RequestBodys /> },
   { path: "docs/error-responses", element: <ErrorResponses /> },
+  { path: "docs/test-users", element: <TestUsers /> },
 
   // auth
   { path: "api/auth/login", element: <PostLogin /> },
