@@ -13,10 +13,21 @@ const router = express.Router();
 
 const saltRounds = Number(process.env.SALT_ROUNDS) || 10;
 
+const allowedOrigins = ["http://localhost:5173", "https://docs.properform.app"];
+
 router.post(
   "/register",
   createRateLimiter({ windowMs: 15 * 60 * 1000, max: 5 }),
   async (req, res) => {
+    const origin = req.headers.origin;
+    const docsKey = req.headers["x-docs-key"];
+
+    let email_verified = 0;
+
+    if (allowedOrigins.includes(origin) && docsKey === process.env.DOCS_KEY) {
+      email_verified = 1;
+    }
+
     const {
       firstname,
       birthdate,
@@ -86,8 +97,8 @@ router.post(
 
       const [result] = await connection.execute(
         `INSERT INTO users 
-        (firstname, birthdate, email, password_hash, weight, height, gender, onboarding_completed, fitness_level, training_frequency, primary_goal, role_id, email_verification_code, email_verification_expires) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (firstname, birthdate, email, password_hash, weight, height, gender, onboarding_completed, fitness_level, training_frequency, primary_goal, role_id, email_verification_code, email_verification_expires, email_verified) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           firstname,
           birthdate,
@@ -103,6 +114,7 @@ router.post(
           role_id,
           codeHash,
           expiresAt,
+          email_verified,
         ],
       );
 
