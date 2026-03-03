@@ -68,6 +68,10 @@ export const navLinks: NavLink[] = [
             to: "/api/auth/reset-password/:token",
             label: "POST /auth/reset-password/:token",
           },
+          {
+            to: "/api/auth/push-token",
+            label: "POST /auth/push-token",
+          },
         ],
       },
       {
@@ -122,20 +126,20 @@ export const navLinks: NavLink[] = [
             label: "POST /trainers/check-invite-code",
           },
           {
-            to: "/api/athletes/trainer/connect",
-            label: "GET /athletes/trainer/connect",
+            to: "/api/trainers/connect",
+            label: "POST /trainers/connect",
           },
           {
-            to: "/api/athletes/trainer/disconnect",
-            label: "GET /athletes/trainer/disconnect",
+            to: "/api/trainers/disconnect",
+            label: "GET /trainers/disconnect",
           },
           {
             to: "/api/trainers/:tid/athletes",
             label: "GET /trainers/:tid/athletes",
           },
           {
-            to: "/api/athletes/trainer/me",
-            label: "GET /athletes/trainer/me",
+            to: "/api/trainers/me",
+            label: "GET /trainers/me",
           },
         ],
       },
@@ -146,6 +150,16 @@ export const navLinks: NavLink[] = [
           { to: "/api/media/list", label: "GET /media" },
           { to: "/api/media/:mid", label: "DELETE /media/:mid" },
           { to: "/api/media/:mid/update", label: "PUT /media/:mid" },
+        ],
+      },
+      {
+        label: "Notifications",
+        subLinks: [
+          { to: "/api/notifications/me", label: "GET /notifications/me" },
+          {
+            to: "/api/admin/notifications/send",
+            label: "POST /notifications/send",
+          },
         ],
       },
       {

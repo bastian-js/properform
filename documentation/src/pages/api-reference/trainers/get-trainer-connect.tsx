@@ -7,7 +7,7 @@ export default function ConnectTrainer() {
   return (
     <div className="px-6 py-8 space-y-6">
       <div className="flex items-center gap-3">
-        <code>POST /athletes/trainer/connect</code>
+        <code>POST /trainers/connect</code>
         <Label text="Protected route" color="#F59E0B" />
       </div>
 

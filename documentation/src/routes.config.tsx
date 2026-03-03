@@ -53,6 +53,9 @@ import TestUsers from "./pages/docs/test-users";
 
 import Settings from "./pages/Settings";
 import CheckToken from "./pages/docs/check-token";
+import GetNotificationsMe from "./pages/api-reference/notifications/get-notifications-me";
+import PostNotificationsSend from "./pages/api-reference/admin/post-notifications-send";
+import PostAuthPushToken from "./pages/api-reference/auth/post-push-token";
 
 export const apiRoutes = [
   // docs
@@ -67,6 +70,7 @@ export const apiRoutes = [
   { path: "api/auth/register", element: <PostRegister /> },
   { path: "api/auth/admin/login", element: <PostAdminLogin /> },
   { path: "api/auth/admin/register", element: <PostAdminRegister /> },
+  { path: "api/auth/push-token", element: <PostAuthPushToken /> },
   {
     path: "api/auth/check-verification-code",
     element: <PostCheckVerificationCode />,
@@ -102,16 +106,16 @@ export const apiRoutes = [
     path: "api/trainers/check-invite-code",
     element: <CheckInviteCode />,
   },
-  { path: "api/athletes/trainer/connect", element: <ConnectTrainer /> },
+  { path: "api/trainers/connect", element: <ConnectTrainer /> },
   {
-    path: "api/athletes/trainer/disconnect",
+    path: "api/trainers/disconnect",
     element: <DisconnectTrainer />,
   },
   {
     path: "api/trainers/:tid/athletes",
     element: <GetTrainerAthletes />,
   },
-  { path: "api/athletes/trainer/me", element: <GetMyTrainer /> },
+  { path: "api/trainers/me", element: <GetMyTrainer /> },
 
   // exercises
   { path: "api/exercises", element: <GetExercises /> },
@@ -131,6 +135,10 @@ export const apiRoutes = [
   { path: "api/media/list", element: <GetMedia /> },
   { path: "api/media/:mid", element: <DeleteMediaMid /> },
   { path: "api/media/:mid/update", element: <PutMediaMid /> },
+
+  // notifications
+  { path: "api/notifications/me", element: <GetNotificationsMe /> },
+  { path: "api/admin/notifications/send", element: <PostNotificationsSend /> },
 
   // system
   { path: "api/system/health", element: <GetHealth /> },

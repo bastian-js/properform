@@ -7,7 +7,7 @@ export default function DisconnectTrainer() {
   return (
     <div className="px-6 py-8 space-y-6">
       <div className="flex items-center gap-3">
-        <code>GET /athletes/trainer/disconnect</code>
+        <code>GET /trainers/disconnect</code>
         <Label text="Protected route" color="#F59E0B" />
       </div>
 
