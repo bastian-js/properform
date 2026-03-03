@@ -52,6 +52,7 @@ import ErrorResponses from "./pages/docs/error-responses";
 import TestUsers from "./pages/docs/test-users";
 
 import Settings from "./pages/Settings";
+import CheckToken from "./pages/docs/check-token";
 
 export const apiRoutes = [
   // docs
@@ -59,6 +60,7 @@ export const apiRoutes = [
   { path: "docs/request-bodys", element: <RequestBodys /> },
   { path: "docs/error-responses", element: <ErrorResponses /> },
   { path: "docs/test-users", element: <TestUsers /> },
+  { path: "docs/verify-token", element: <CheckToken /> },
 
   // auth
   { path: "api/auth/login", element: <PostLogin /> },

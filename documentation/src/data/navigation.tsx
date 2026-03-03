@@ -33,6 +33,7 @@ export const navLinks: NavLink[] = [
     subLinks: [
       { to: "/docs/test-users", label: "Test Users" },
       { to: "/docs/error-responses", label: "Error Responses" },
+      { to: "/docs/verify-token", label: "Verify Token" },
     ],
   },
 
