@@ -4,6 +4,8 @@ import { db } from "../../db.js";
 import { requireAuth } from "../../middleware/auth.js";
 import { requireRole } from "../../middleware/role.js";
 
+import fs from "fs";
+
 const router = express.Router();
 
 router.get(
@@ -83,6 +85,35 @@ router.get(
       system: sys,
       process: processInfo,
     });
+  },
+);
+
+router.post(
+  "/save-log",
+  requireAuth,
+  requireRole("owner"),
+  async (req, res) => {
+    const { message } = req.body;
+
+    if (!message || typeof message !== "string") {
+      return res.status(400).json({
+        success: false,
+        error: "invalid log message.",
+      });
+    }
+
+    try {
+      fs.appendFileSync("system.log", message, "\n");
+
+      res.json({
+        success: true,
+      });
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        error: "failed to save log message.",
+      });
+    }
   },
 );
 
