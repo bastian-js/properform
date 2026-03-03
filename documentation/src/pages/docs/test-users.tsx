@@ -138,7 +138,7 @@ export default function TestUsers() {
 
       <Heading>User - Register</Heading>
       <CodeBlock
-        language="http"
+        language="json"
         code={`{
   "firstname": "${registerUser.fullName}",
   "birthdate": "1995-04-12",
@@ -178,7 +178,7 @@ export default function TestUsers() {
         <>
           <Heading>User - Login</Heading>
           <CodeBlock
-            language="http"
+            language="json"
             code={`{
   "email": "${loginUser.email}",
   "password": "Demo1234!"
