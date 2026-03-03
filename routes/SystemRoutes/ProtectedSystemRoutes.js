@@ -88,33 +88,57 @@ router.get(
   },
 );
 
+import fs from "fs";
+import path from "path";
+
+const LOG_DIR = path.join(process.cwd(), "logs");
+
 router.post(
   "/save-log",
   requireAuth,
   requireRole("owner"),
   async (req, res) => {
-    const { message } = req.body;
+    const { filename, message } = req.body;
 
-    if (!message || typeof message !== "string") {
+    if (!filename || !message) {
       return res.status(400).json({
         success: false,
-        error: "invalid log message.",
+        error: "filename and message are required.",
+      });
+    }
+
+    if (typeof filename !== "string" || typeof message !== "string") {
+      return res.status(400).json({
+        success: false,
+        error: "invalid filename or message type.",
+      });
+    }
+
+    // nur Buchstaben, Zahlen, -, _
+    if (!/^[a-zA-Z0-9_-]+$/.test(filename)) {
+      return res.status(400).json({
+        success: false,
+        error: "invalid filename format.",
       });
     }
 
     try {
-      fs.appendFileSync("system.log", message, "\n");
+      if (!fs.existsSync(LOG_DIR)) {
+        fs.mkdirSync(LOG_DIR);
+      }
 
-      res.json({
-        success: true,
-      });
+      const filePath = path.join(LOG_DIR, `${filename}.log`);
+
+      fs.appendFileSync(filePath, message + "\n");
+
+      res.json({ success: true });
     } catch (err) {
       res.status(500).json({
         success: false,
         error: "failed to save log message.",
       });
     }
-  },
+  }
 );
 
 export default router;
