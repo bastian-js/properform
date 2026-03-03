@@ -9,6 +9,7 @@ import weightLogRoutes from "./UserRoutes/weightLogRoutes.js";
 import protectedExerciseRoutes from "./ExerciseRoutes/protected/index.js";
 import listExerciseAll from "./ExerciseRoutes/protected/listExercisesAll.js";
 import protectedMediaRoutes from "./MediaRoutes/protected/index.js";
+import protectedAuthRoutes from "./AuthRoutes/protectedAuthRoutes.js";
 
 const routeMounts = [
   { router: publicUserRoutes, path: "/users", protected: false },
@@ -22,6 +23,7 @@ const routeMounts = [
   { router: weightLogRoutes, path: "/logs", protected: true },
   { router: protectedExerciseRoutes, path: "/admin", protected: true },
   { router: protectedMediaRoutes, path: "/media", protected: true },
+  { router: protectedAuthRoutes, path: "/auth", protected: true },
 ];
 
 const mountRoutes = (app) => {
