@@ -35,4 +35,6 @@ jobs:
           source: "documentation/dist/*"
           target: ${{ secrets.DOCS_PATH }}
           strip_components: 2
-
+          timeout: 120s
+          command_timeout: 10m
+          debug: true
