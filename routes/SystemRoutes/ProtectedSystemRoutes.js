@@ -91,52 +91,58 @@ router.get(
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
-router.post(
-  "/save-log",
-  requireAuth,
-  requireRole("owner"),
-  async (req, res) => {
-    const { filename, message } = req.body;
+const allowedOrigins = ["http://localhost:5173", "https://docs.properform.app"];
 
-    if (!filename || !message) {
-      return res.status(400).json({
-        success: false,
-        error: "filename and message are required.",
-      });
-    }
+router.post("/save-log", async (req, res) => {
+  const origin = req.headers.origin;
 
-    if (typeof filename !== "string" || typeof message !== "string") {
-      return res.status(400).json({
-        success: false,
-        error: "invalid filename or message type.",
-      });
-    }
-
-    // nur Buchstaben, Zahlen, -, _
-    if (!/^[a-zA-Z0-9_-]+$/.test(filename)) {
-      return res.status(400).json({
-        success: false,
-        error: "invalid filename format.",
-      });
-    }
-
-    try {
-      if (!fs.existsSync(LOG_DIR)) {
-        fs.mkdirSync(LOG_DIR);
-      }
-
-      const filePath = path.join(LOG_DIR, `${filename}.log`);
-
-      fs.appendFileSync(filePath, message + "\n");
-
-      res.json({ success: true });
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        error: "failed to save log message.",
-      });
-    }
+  if (!allowedOrigins.includes(origin)) {
+    return res.status(403).json({
+      success: false,
+      error: "origin not allowed.",
+    });
   }
-);
+
+  const { filename, message } = req.body;
+
+  if (!filename || !message) {
+    return res.status(400).json({
+      success: false,
+      error: "filename and message are required.",
+    });
+  }
+
+  if (typeof filename !== "string" || typeof message !== "string") {
+    return res.status(400).json({
+      success: false,
+      error: "invalid filename or message type.",
+    });
+  }
+
+  // nur Buchstaben, Zahlen, -, _
+  if (!/^[a-zA-Z0-9_-]+$/.test(filename)) {
+    return res.status(400).json({
+      success: false,
+      error: "invalid filename format.",
+    });
+  }
+
+  try {
+    if (!fs.existsSync(LOG_DIR)) {
+      fs.mkdirSync(LOG_DIR);
+    }
+
+    const filePath = path.join(LOG_DIR, `${filename}.log`);
+
+    fs.appendFileSync(filePath, message + "\n");
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: "failed to save log message.",
+    });
+  }
+});
 
 export default router;
