@@ -5,6 +5,7 @@ import { requireAuth } from "../../middleware/auth.js";
 import { requireRole } from "../../middleware/role.js";
 
 import fs from "fs";
+import path from "path";
 
 const router = express.Router();
 
@@ -87,9 +88,6 @@ router.get(
     });
   },
 );
-
-import fs from "fs";
-import path from "path";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
