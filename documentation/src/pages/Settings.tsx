@@ -45,7 +45,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 p-8">
+    <div className="min-h-screen p-8">
       <style>{`
         @keyframes togglePulse {
           0% { transform: scale(1); }
