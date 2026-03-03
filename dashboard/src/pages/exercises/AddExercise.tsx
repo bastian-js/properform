@@ -7,6 +7,7 @@ import {
   X,
   FileIcon,
 } from "lucide-react";
+import ToggleSwitch from "../../components/ToggleSwitch";
 import authFetch from "../../functions/authFetch";
 
 interface FileState {
@@ -28,6 +29,14 @@ export default function AddExercise() {
   const [diffLevelId, setDiffLevelId] = useState("");
   const [duration, setDuration] = useState("");
   const [equipment, setEquipment] = useState("");
+
+  // Upload Mode toggles (true = upload, false = id)
+  const [videoMode, setVideoMode] = useState(true);
+  const [thumbnailMode, setThumbnailMode] = useState(true);
+
+  // ID inputs
+  const [videoId, setVideoId] = useState("");
+  const [thumbnailId, setThumbnailId] = useState("");
 
   // File States
   const [video, setVideo] = useState<FileState>({
@@ -183,8 +192,20 @@ export default function AddExercise() {
       return;
     }
 
-    if (!video.mid || !thumbnail.mid) {
-      alert("Bitte lade Video und Thumbnail hoch");
+    // Get final video MID
+    const finalVideoMid = videoMode
+      ? video.mid
+      : videoId
+        ? Number(videoId)
+        : null;
+    const finalThumbnailMid = thumbnailMode
+      ? thumbnail.mid
+      : thumbnailId
+        ? Number(thumbnailId)
+        : null;
+
+    if (!finalVideoMid || !finalThumbnailMid) {
+      alert("Bitte lade Video und Thumbnail hoch oder gib ihre IDs ein");
       return;
     }
 
@@ -197,8 +218,8 @@ export default function AddExercise() {
           name,
           description,
           instructions,
-          video_mid: video.mid,
-          thumbnail_mid: thumbnail.mid,
+          video_mid: finalVideoMid,
+          thumbnail_mid: finalThumbnailMid,
           sid: Number(sportId),
           dlid: Number(diffLevelId),
           duration_minutes: Number(duration),
@@ -231,6 +252,8 @@ export default function AddExercise() {
         uploadError: null,
         showSuccess: false,
       });
+      setVideoId("");
+      setThumbnailId("");
       setSportId("");
       setDiffLevelId("");
       setDuration("");
@@ -242,11 +265,13 @@ export default function AddExercise() {
     }
   }
 
-  const isReady = video.mid && thumbnail.mid;
+  const isReady =
+    (videoMode ? video.mid : videoId) &&
+    (thumbnailMode ? thumbnail.mid : thumbnailId);
 
   return (
     <div className="flex justify-center w-full mt-5 mb-5">
-      <div className="bg-gray-800 rounded-2xl shadow-lg p-8 w-[90%] max-w-3xl w-[90%] max-w-3xl">
+      <div className="bg-gray-800 rounded-2xl shadow-lg p-8 w-[90%] max-w-3xl">
         <h1 className="text-3xl font-bold text-blue-400 mb-2 text-center">
           Create Exercise
         </h1>
@@ -316,274 +341,369 @@ export default function AddExercise() {
 
           {/* VIDEO UPLOAD */}
           <div className="flex flex-col">
-            <label className="text-sm mb-2 text-gray-300 tracking-wide font-semibold">
-              Video
-            </label>
-
-            {/* Drop Zone */}
-            <div
-              onClick={() => videoInputRef.current?.click()}
-              className="border-2 border-dashed rounded-xl p-10 transition-all duration-300 cursor-pointer border-gray-600 hover:border-blue-400 relative bg-gray-700/30 group mb-3"
-            >
-              {video.file && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClearFile("video");
-                  }}
-                  className="absolute top-3 right-3 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full transition-all cursor-pointer hover:scale-110"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <div className="p-4 rounded-lg bg-gray-700">
-                  <Upload className="w-8 h-8 text-gray-400 group-hover:text-blue-400 transition-colors" />
-                </div>
-
-                {video.file ? (
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <FileIcon className="w-4 h-4 text-blue-400" />
-                      <p className="font-semibold text-gray-100">
-                        {video.file.name}
-                      </p>
-                    </div>
-                    <p className="text-sm text-gray-400">
-                      {(video.file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <p className="text-gray-200 font-semibold mb-1">
-                      Datei auswählen oder ablegen
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      Klick oder Drag & Drop
-                    </p>
-                  </div>
-                )}
-              </div>
-              <input
-                ref={videoInputRef}
-                type="file"
-                accept="video/*"
-                onChange={(e) => handleFileSelect(e, "video")}
-                className="hidden"
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-sm text-gray-300 tracking-wide font-semibold">
+                Video
+              </label>
+              <ToggleSwitch
+                checked={videoMode}
+                onChange={(checked) => {
+                  setVideoMode(checked);
+                  if (checked) {
+                    setVideoId("");
+                  } else {
+                    setVideo({
+                      file: null,
+                      filename: "",
+                      extension: "",
+                      mid: null,
+                      uploading: false,
+                      uploadError: null,
+                      showSuccess: false,
+                    });
+                  }
+                }}
+                leftLabel="ID"
+                rightLabel="Hochladen"
               />
             </div>
 
-            {/* Video Filename Input */}
-            {video.file && (
-              <div className="flex flex-col mb-3">
-                <label className="text-xs mb-2 text-gray-400">
-                  Dateiname (Extension wird automatisch hinzugefügt)
-                </label>
-                <div className="flex gap-2 items-end">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={video.filename}
-                      onChange={(e) =>
-                        setVideo((prev) => ({
-                          ...prev,
-                          filename: e.target.value,
-                        }))
-                      }
-                      className="w-full px-5 py-3 rounded-xl bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 outline-none text-lg placeholder-gray-500 transition"
-                      placeholder="video-name"
-                    />
-                  </div>
-                  <span className="text-gray-400 text-sm px-3 py-3 bg-gray-700 rounded-lg">
-                    .{video.extension}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Video Upload Button */}
-            {video.file && !video.mid && (
-              <button
-                type="button"
-                onClick={() => handleUpload("video")}
-                disabled={video.uploading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer mb-3"
-              >
-                {video.uploading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Wird hochgeladen...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    <span>Video hochladen</span>
-                  </>
-                )}
-              </button>
-            )}
-
-            {/* Video Messages */}
-            {video.uploadError && (
-              <div className="mb-3 bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <p>{video.uploadError}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setVideo((prev) => ({ ...prev, uploadError: null }))
-                  }
-                  className="text-red-300 hover:text-red-100 transition-colors cursor-pointer"
+            {videoMode ? (
+              <>
+                {/* Drop Zone */}
+                <div
+                  onClick={() => videoInputRef.current?.click()}
+                  className="border-2 border-dashed rounded-xl p-10 transition-all duration-300 cursor-pointer border-gray-600 hover:border-blue-400 relative bg-gray-700/30 group mb-3"
                 >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+                  {video.file && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearFile("video");
+                      }}
+                      className="absolute top-3 right-3 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full transition-all cursor-pointer hover:scale-110"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="p-4 rounded-lg bg-gray-700">
+                      <Upload className="w-8 h-8 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                    </div>
 
-            {video.mid && (
-              <div className="bg-green-500/20 border border-green-500 text-green-200 p-4 rounded-xl flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 flex-shrink-0 text-green-400" />
-                <p className="font-semibold">✓ Video hochgeladen</p>
+                    {video.file ? (
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <FileIcon className="w-4 h-4 text-blue-400" />
+                          <p className="font-semibold text-gray-100">
+                            {video.file.name}
+                          </p>
+                        </div>
+                        <p className="text-sm text-gray-400">
+                          {(video.file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-gray-200 font-semibold mb-1">
+                          Datei auswählen oder ablegen
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          Klick oder Drag & Drop
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => handleFileSelect(e, "video")}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Video Filename Input */}
+                {video.file && (
+                  <div className="flex flex-col mb-3">
+                    <label className="text-xs mb-2 text-gray-400">
+                      Dateiname (Extension wird automatisch hinzugefügt)
+                    </label>
+                    <div className="flex gap-2 items-end">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={video.filename}
+                          onChange={(e) =>
+                            setVideo((prev) => ({
+                              ...prev,
+                              filename: e.target.value,
+                            }))
+                          }
+                          className="w-full px-5 py-3 rounded-xl bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 outline-none text-lg placeholder-gray-500 transition"
+                          placeholder="video-name"
+                        />
+                      </div>
+                      <span className="text-gray-400 text-sm px-3 py-3 bg-gray-700 rounded-lg">
+                        .{video.extension}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Video Upload Button */}
+                {video.file && !video.mid && (
+                  <button
+                    type="button"
+                    onClick={() => handleUpload("video")}
+                    disabled={video.uploading}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer mb-3"
+                  >
+                    {video.uploading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Wird hochgeladen...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        <span>Video hochladen</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Video Messages */}
+                {video.uploadError && (
+                  <div className="mb-3 bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                      <p>{video.uploadError}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setVideo((prev) => ({ ...prev, uploadError: null }))
+                      }
+                      className="text-red-300 hover:text-red-100 transition-colors cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {video.mid && (
+                  <div className="bg-green-500/20 border border-green-500 text-green-200 p-4 rounded-xl flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0 text-green-400" />
+                    <p className="font-semibold">
+                      ✓ Video hochgeladen (ID: {video.mid})
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex flex-col">
+                <input
+                  type="number"
+                  value={videoId}
+                  onChange={(e) => setVideoId(e.target.value)}
+                  placeholder="Video ID eingeben..."
+                  className="w-full px-5 py-3 rounded-xl bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 outline-none text-lg placeholder-gray-500 transition"
+                />
+                {videoId && (
+                  <div className="mt-3 bg-green-500/20 border border-green-500 text-green-200 p-4 rounded-xl flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0 text-green-400" />
+                    <p className="font-semibold">✓ Video ID: {videoId}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           {/* THUMBNAIL UPLOAD */}
           <div className="flex flex-col">
-            <label className="text-sm mb-2 text-gray-300 tracking-wide font-semibold">
-              Thumbnail
-            </label>
-
-            {/* Drop Zone */}
-            <div
-              onClick={() => thumbnailInputRef.current?.click()}
-              className="border-2 border-dashed rounded-xl p-10 transition-all duration-300 cursor-pointer border-gray-600 hover:border-blue-400 relative bg-gray-700/30 group mb-3"
-            >
-              {thumbnail.file && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClearFile("thumbnail");
-                  }}
-                  className="absolute top-3 right-3 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full transition-all cursor-pointer hover:scale-110"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <div className="p-4 rounded-lg bg-gray-700">
-                  <Upload className="w-8 h-8 text-gray-400 group-hover:text-blue-400 transition-colors" />
-                </div>
-
-                {thumbnail.file ? (
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <FileIcon className="w-4 h-4 text-blue-400" />
-                      <p className="font-semibold text-gray-100">
-                        {thumbnail.file.name}
-                      </p>
-                    </div>
-                    <p className="text-sm text-gray-400">
-                      {(thumbnail.file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <p className="text-gray-200 font-semibold mb-1">
-                      Datei auswählen oder ablegen
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      Klick oder Drag & Drop
-                    </p>
-                  </div>
-                )}
-              </div>
-              <input
-                ref={thumbnailInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileSelect(e, "thumbnail")}
-                className="hidden"
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-sm text-gray-300 tracking-wide font-semibold">
+                Thumbnail
+              </label>
+              <ToggleSwitch
+                checked={thumbnailMode}
+                onChange={(checked) => {
+                  setThumbnailMode(checked);
+                  if (checked) {
+                    setThumbnailId("");
+                  } else {
+                    setThumbnail({
+                      file: null,
+                      filename: "",
+                      extension: "",
+                      mid: null,
+                      uploading: false,
+                      uploadError: null,
+                      showSuccess: false,
+                    });
+                  }
+                }}
+                leftLabel="ID"
+                rightLabel="Hochladen"
               />
             </div>
 
-            {/* Thumbnail Filename Input */}
-            {thumbnail.file && (
-              <div className="flex flex-col mb-3">
-                <label className="text-xs mb-2 text-gray-400">
-                  Dateiname (Extension wird automatisch hinzugefügt)
-                </label>
-                <div className="flex gap-2 items-end">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={thumbnail.filename}
-                      onChange={(e) =>
+            {thumbnailMode ? (
+              <>
+                {/* Drop Zone */}
+                <div
+                  onClick={() => thumbnailInputRef.current?.click()}
+                  className="border-2 border-dashed rounded-xl p-10 transition-all duration-300 cursor-pointer border-gray-600 hover:border-blue-400 relative bg-gray-700/30 group mb-3"
+                >
+                  {thumbnail.file && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearFile("thumbnail");
+                      }}
+                      className="absolute top-3 right-3 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full transition-all cursor-pointer hover:scale-110"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="p-4 rounded-lg bg-gray-700">
+                      <Upload className="w-8 h-8 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                    </div>
+
+                    {thumbnail.file ? (
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <FileIcon className="w-4 h-4 text-blue-400" />
+                          <p className="font-semibold text-gray-100">
+                            {thumbnail.file.name}
+                          </p>
+                        </div>
+                        <p className="text-sm text-gray-400">
+                          {(thumbnail.file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-gray-200 font-semibold mb-1">
+                          Datei auswählen oder ablegen
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          Klick oder Drag & Drop
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    ref={thumbnailInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileSelect(e, "thumbnail")}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Thumbnail Filename Input */}
+                {thumbnail.file && (
+                  <div className="flex flex-col mb-3">
+                    <label className="text-xs mb-2 text-gray-400">
+                      Dateiname (Extension wird automatisch hinzugefügt)
+                    </label>
+                    <div className="flex gap-2 items-end">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={thumbnail.filename}
+                          onChange={(e) =>
+                            setThumbnail((prev) => ({
+                              ...prev,
+                              filename: e.target.value,
+                            }))
+                          }
+                          className="w-full px-5 py-3 rounded-xl bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 outline-none text-lg placeholder-gray-500 transition"
+                          placeholder="thumbnail-name"
+                        />
+                      </div>
+                      <span className="text-gray-400 text-sm px-3 py-3 bg-gray-700 rounded-lg">
+                        .{thumbnail.extension}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Thumbnail Upload Button */}
+                {thumbnail.file && !thumbnail.mid && (
+                  <button
+                    type="button"
+                    onClick={() => handleUpload("thumbnail")}
+                    disabled={thumbnail.uploading}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer mb-3"
+                  >
+                    {thumbnail.uploading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Wird hochgeladen...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        <span>Thumbnail hochladen</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Thumbnail Messages */}
+                {thumbnail.uploadError && (
+                  <div className="mb-3 bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                      <p>{thumbnail.uploadError}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
                         setThumbnail((prev) => ({
                           ...prev,
-                          filename: e.target.value,
+                          uploadError: null,
                         }))
                       }
-                      className="w-full px-5 py-3 rounded-xl bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 outline-none text-lg placeholder-gray-500 transition"
-                      placeholder="thumbnail-name"
-                    />
+                      className="text-red-300 hover:text-red-100 transition-colors cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <span className="text-gray-400 text-sm px-3 py-3 bg-gray-700 rounded-lg">
-                    .{thumbnail.extension}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Thumbnail Upload Button */}
-            {thumbnail.file && !thumbnail.mid && (
-              <button
-                type="button"
-                onClick={() => handleUpload("thumbnail")}
-                disabled={thumbnail.uploading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer mb-3"
-              >
-                {thumbnail.uploading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Wird hochgeladen...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    <span>Thumbnail hochladen</span>
-                  </>
                 )}
-              </button>
-            )}
 
-            {/* Thumbnail Messages */}
-            {thumbnail.uploadError && (
-              <div className="mb-3 bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <p>{thumbnail.uploadError}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setThumbnail((prev) => ({ ...prev, uploadError: null }))
-                  }
-                  className="text-red-300 hover:text-red-100 transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {thumbnail.mid && (
-              <div className="bg-green-500/20 border border-green-500 text-green-200 p-4 rounded-xl flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 flex-shrink-0 text-green-400" />
-                <p className="font-semibold">✓ Thumbnail hochgeladen</p>
+                {thumbnail.mid && (
+                  <div className="bg-green-500/20 border border-green-500 text-green-200 p-4 rounded-xl flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0 text-green-400" />
+                    <p className="font-semibold">
+                      ✓ Thumbnail hochgeladen (ID: {thumbnail.mid})
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex flex-col">
+                <input
+                  type="number"
+                  value={thumbnailId}
+                  onChange={(e) => setThumbnailId(e.target.value)}
+                  placeholder="Thumbnail ID eingeben..."
+                  className="w-full px-5 py-3 rounded-xl bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 outline-none text-lg placeholder-gray-500 transition"
+                />
+                {thumbnailId && (
+                  <div className="mt-3 bg-green-500/20 border border-green-500 text-green-200 p-4 rounded-xl flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0 text-green-400" />
+                    <p className="font-semibold">
+                      ✓ Thumbnail ID: {thumbnailId}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
