@@ -11,6 +11,9 @@ import listExerciseAll from "./ExerciseRoutes/protected/listExercisesAll.js";
 import protectedMediaRoutes from "./MediaRoutes/protected/index.js";
 import protectedAuthRoutes from "./AuthRoutes/protectedAuthRoutes.js";
 
+import notificationRoutes from "./AdminRoutes/protected/notificationRoutes.js";
+import notificationsMe from "./UserRoutes/Notifications/notificationsMe.js";
+
 const routeMounts = [
   { router: publicUserRoutes, path: "/users", protected: false },
   { router: publicTrainerRoutes, path: "/trainers", protected: false },
@@ -24,6 +27,8 @@ const routeMounts = [
   { router: protectedExerciseRoutes, path: "/admin", protected: true },
   { router: protectedMediaRoutes, path: "/media", protected: true },
   { router: protectedAuthRoutes, path: "/auth", protected: true },
+  { router: notificationRoutes, path: "/admin", protected: true },
+  { router: notificationsMe, path: "/notifications", protected: true },
 ];
 
 const mountRoutes = (app) => {

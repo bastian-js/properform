@@ -65,6 +65,10 @@ router.post(
       if (!valid)
         return res.status(401).json({ error: "invalid credentials." });
 
+      await db.query("UPDATE users SET last_login = NOW() WHERE uid = ?", [
+        user.uid,
+      ]);
+
       const token = jwt.sign(
         { uid: user.uid, email: user.email, role: "owner" },
         process.env.JWT_SECRET,
