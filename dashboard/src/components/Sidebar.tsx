@@ -14,6 +14,7 @@ import {
   CloudUpload,
   Router,
   ShieldCheck,
+  CircleUser,
 } from "lucide-react";
 
 interface MenuItem {
@@ -123,6 +124,11 @@ export default function Sidebar() {
       ],
     },
     { to: "/stats", icon: <ChartColumn size={20} />, label: "Stats" },
+    {
+      to: "/users/me",
+      icon: <CircleUser size={20} />,
+      label: "My Account",
+    },
     {
       to: "/verify-token",
       icon: <ShieldCheck size={20} />,
