@@ -73,7 +73,7 @@ router.post(
 );
 
 router.get(
-  "/admin/notifications",
+  "/notifications",
   requireAuth,
   requireRole("owner"),
   async (req, res) => {
