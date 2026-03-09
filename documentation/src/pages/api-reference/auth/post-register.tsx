@@ -5,7 +5,7 @@ import Label from "../../../components/Label";
 
 export default function PostRegister() {
   return (
-    <div className="px-6 py-8 space-y-6">
+    <div className="px-6 py-8 space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
         <code>POST /auth/register</code>
         <Label text="Public route" color="#10B981" />
@@ -38,20 +38,29 @@ export default function PostRegister() {
 
       <Heading>Field Requirements</Heading>
       <CodeBlock
-        language="text"
-        code={`firstname         (string, required)
-birthdate         (string, required, format: YYYY-MM-DD)
-email             (string, required, valid email format)
-password          (string, required, min 8 chars, must include uppercase, lowercase, number, special char)
-weight            (number, required, kg)
-height            (number, required, cm)
-gender            (string, required)
-onboarding_completed (boolean, required)
-fitness_level     (string, required)
-training_frequency (number, required)
-primary_goal      (string, required)
-stayLoggedIn      (boolean, optional, default: false)`}
+        language="json"
+        code={`{
+  "firstname": "string (required)",
+  "birthdate": "string (required, YYYY-MM-DD)",
+  "email": "string (required, valid email)",
+  "password": "string (required, 8+ chars)",
+  "weight": "number (required, kg)",
+  "height": "number (required, cm)",
+  "gender": "string (required)",
+  "onboarding_completed": "boolean (required)",
+  "fitness_level": "string (required)",
+  "training_frequency": "number (required)",
+  "primary_goal": "string (required)",
+  "stayLoggedIn": "boolean (optional)"
+}`}
       />
+
+      <Heading>Password Requirements</Heading>
+      <Text>
+        The password must be at least 8 characters long and contain at least one
+        uppercase letter, one lowercase letter, one number, and one special
+        character (@$!%*?&#_-).
+      </Text>
 
       <Heading>Success Response (201)</Heading>
       <CodeBlock
@@ -73,7 +82,7 @@ stayLoggedIn      (boolean, optional, default: false)`}
 
 // Invalid password (400)
 {
-  "error": "password must be at least 8 characters long and contain uppercase, lowercase, number, and special character."
+  "error": "password must be at least 8 characters..."
 }
 
 // Invalid email (400)
@@ -86,7 +95,7 @@ stayLoggedIn      (boolean, optional, default: false)`}
   "error": "email already registered."
 }
 
-// Email send failed (201)
+// Verification email failed (201)
 {
   "message": "user created but verification email failed.",
   "error": "error details"
@@ -98,13 +107,6 @@ stayLoggedIn      (boolean, optional, default: false)`}
   "error": "error details"
 }`}
       />
-
-      <Heading>Password Requirements</Heading>
-      <Text>
-        The password must be at least 8 characters long and contain at least one
-        uppercase letter, one lowercase letter, one number, and one special
-        character (@$!%*?&#_-).
-      </Text>
 
       <Heading>Token Expiration</Heading>
       <Text>

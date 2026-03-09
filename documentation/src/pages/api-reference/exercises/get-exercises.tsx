@@ -14,7 +14,8 @@ export default function GetExercises() {
       <Text>
         Returns a paginated list of exercises. For <code>admin</code> scope,
         returns only ID and name. For regular users, returns full exercise data
-        with media URLs. Requires authentication and user or owner role.
+        with media URLs and associated muscle groups. Requires authentication
+        and user or owner role.
       </Text>
 
       <Heading>Authorization Header</Heading>
@@ -74,7 +75,19 @@ Authorization: Bearer <JWT_TOKEN>`}
       "created_at": "2024-01-15T10:30:00Z",
       "updated_at": "2024-02-20T14:45:00Z",
       "video_url": "https://media.properform.app/videos/video.mp4",
-      "thumbnail_url": "https://media.properform.app/images/thumb.jpg"
+      "thumbnail_url": "https://media.properform.app/images/thumb.jpg",
+      "muscle_groups": [
+        {
+          "mgid": 1,
+          "name": "Chest",
+          "is_primary": 1
+        },
+        {
+          "mgid": 3,
+          "name": "Shoulders",
+          "is_primary": 0
+        }
+      ]
     }
   ]
 }`}
@@ -127,7 +140,8 @@ Authorization: Bearer <JWT_TOKEN>`}
       <Text>
         Requires authentication. User or owner role. For <code>admin</code>{" "}
         scope, must have owner role. The <code>filter</code> parameter accepts
-        only "gym" or "basketball".
+        only "gym" or "basketball". User scope responses include{" "}
+        <code>muscle_groups</code> array with primary/secondary status.
       </Text>
     </div>
   );

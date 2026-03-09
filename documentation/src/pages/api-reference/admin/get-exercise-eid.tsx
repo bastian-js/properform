@@ -12,8 +12,9 @@ export default function GetExercisesEid() {
       </div>
 
       <Text>
-        Retrieves a specific exercise by ID with all its details. Requires
-        authentication and the <code>owner</code> role.
+        Retrieves a specific exercise by ID with all its details including
+        associated muscle groups. Requires authentication and the{" "}
+        <code>owner</code> role.
       </Text>
 
       <Heading>Authorization Header</Heading>
@@ -41,7 +42,19 @@ export default function GetExercisesEid() {
   "equipment_needed": "None",
   "created_by": 1,
   "created_at": "2024-01-15T10:30:00Z",
-  "updated_at": "2024-02-20T14:45:00Z"
+  "updated_at": "2024-02-20T14:45:00Z",
+  "muscle_groups": [
+    {
+      "mgid": 1,
+      "name": "Chest",
+      "is_primary": 1
+    },
+    {
+      "mgid": 3,
+      "name": "Shoulders",
+      "is_primary": 0
+    }
+  ]
 }`}
       />
 
@@ -77,7 +90,8 @@ export default function GetExercisesEid() {
       <Heading>Requirements</Heading>
       <Text>
         The requester must be authenticated and have the <code>owner</code>{" "}
-        role.
+        role. The response includes all muscle groups associated with the
+        exercise, with their primary/secondary status.
       </Text>
     </div>
   );

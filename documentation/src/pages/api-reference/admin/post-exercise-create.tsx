@@ -12,8 +12,9 @@ export default function PostExercisesCreate() {
       </div>
 
       <Text>
-        Creates a new exercise entry. Requires authentication and the{" "}
-        <code>owner</code> role. Rate limited to 30 requests per 15 minutes.
+        Creates a new exercise entry with optional muscle group associations.
+        Requires authentication and the <code>owner</code> role. Rate limited to
+        30 requests per 15 minutes.
       </Text>
 
       <Heading>Authorization Header</Heading>
@@ -31,7 +32,11 @@ export default function PostExercisesCreate() {
   "sid": 1,
   "dlid": 2,
   "duration_minutes": 10,
-  "equipment_needed": "None"
+  "equipment_needed": "None",
+  "muscle_groups": [
+    { "mgid": 1, "is_primary": 1 },
+    { "mgid": 3, "is_primary": 0 }
+  ]
 }`}
       />
 
@@ -46,7 +51,10 @@ thumbnail_mid      (number, optional, media id)
 sid                (number, required, structure id)
 dlid               (number, required, difficulty level id)
 duration_minutes   (number, optional, must be positive)
-equipment_needed   (string, optional)`}
+equipment_needed   (string, optional)
+muscle_groups      (array, optional)
+  - mgid           (number, muscle group id)
+  - is_primary     (number, 0 or 1, optional, default: 0)`}
       />
 
       <Heading>Success Response (201)</Heading>
@@ -71,6 +79,11 @@ equipment_needed   (string, optional)`}
   "error": "duration_minutes must be positive"
 }
 
+// Invalid muscle_groups (400)
+{
+  "error": "muscle_groups must be an array"
+}
+
 // Unauthorized (401)
 {
   "error": "Unauthorized"
@@ -90,7 +103,9 @@ equipment_needed   (string, optional)`}
       <Heading>Requirements</Heading>
       <Text>
         The requester must be authenticated and have the <code>owner</code>{" "}
-        role.
+        role. The <code>muscle_groups</code> field is optional and accepts an
+        array of objects with <code>mgid</code> and optional{" "}
+        <code>is_primary</code> flag.
       </Text>
     </div>
   );
