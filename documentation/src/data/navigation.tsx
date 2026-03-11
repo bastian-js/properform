@@ -47,11 +47,13 @@ export const navLinks: NavLink[] = [
         subLinks: [
           { to: "/api/auth/login", label: "POST /auth/login" },
           { to: "/api/auth/register", label: "POST /auth/register" },
+          { to: "api/auth/logout", label: "POST auth/logout" },
           {
             to: "/api/auth/admin/register",
             label: "POST /auth/admin/register",
           },
           { to: "/api/auth/admin/login", label: "POST /auth/admin/login" },
+
           {
             to: "/api/auth/check-verification-code",
             label: "POST /auth/check-verification-code",

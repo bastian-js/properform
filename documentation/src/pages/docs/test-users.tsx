@@ -2,13 +2,88 @@ import Heading from "../../components/docs/Heading";
 import Text from "../../components/docs/Text";
 import CodeBlock from "../../components/docs/CodeBlock";
 import Button from "../../components/Button";
+import { Copy, Check, CircleCheck, Hash, Mail } from "lucide-react";
 
 import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "../../helpers/apiFetch";
+
+function CopyableToken({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-semibold text-green-700 uppercase tracking-wider">
+        {label}
+      </span>
+      <div className="flex items-center gap-3 bg-white/60 border border-green-200 rounded-xl px-3 py-2.5">
+        <button
+          onClick={handleCopy}
+          className="flex-shrink-0 p-1 rounded-lg hover:bg-green-100 transition-all duration-200 hover:scale-110 cursor-pointer"
+          title={`Copy ${label}`}
+        >
+          {copied ? (
+            <Check className="w-3.5 h-3.5 text-green-500" />
+          ) : (
+            <Copy className="w-3.5 h-3.5 text-green-500" />
+          )}
+        </button>
+        <span className="font-mono text-xs text-green-900 break-all leading-relaxed">
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+interface SuccessData {
+  email: string;
+  uid: number;
+  access_token: string;
+  refresh_token: string;
+}
+
+function SuccessBox({ data }: { data: SuccessData }) {
+  return (
+    <div className="rounded-2xl border border-green-200 bg-green-50 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-2.5 px-4 py-3 bg-green-500">
+        <CircleCheck className="w-4 h-4 text-white flex-shrink-0" />
+        <span className="text-white font-semibold text-sm">
+          User registered successfully
+        </span>
+      </div>
+
+      {/* Meta info */}
+      <div className="flex items-center gap-6 px-4 py-3 border-b border-green-200 bg-green-100/60">
+        <div className="flex items-center gap-2 text-sm text-green-800">
+          <Mail className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+          <span className="font-mono">{data.email}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-green-800">
+          <Hash className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+          <span className="font-mono">{data.uid}</span>
+        </div>
+      </div>
+
+      {/* Tokens */}
+      <div className="flex flex-col gap-3 px-4 py-4">
+        <CopyableToken label="access_token" value={data.access_token} />
+        <CopyableToken label="refresh_token" value={data.refresh_token} />
+      </div>
+    </div>
+  );
+}
 
 export default function TestUsers() {
   const BASE_URL = "https://api.properform.app";
 
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successData, setSuccessData] = useState<SuccessData | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [requestState, setRequestState] = useState<
     "idle" | "loading" | "success" | "error"
@@ -47,7 +122,7 @@ export default function TestUsers() {
     setRequestState("loading");
 
     try {
-      const result = await fetch(`${BASE_URL}/auth/register`, {
+      const result = await apiFetch(`${BASE_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +145,7 @@ export default function TestUsers() {
       if (result.ok) {
         const data = await result.json();
 
-        const saveResult = await fetch(`${BASE_URL}/system/save-log`, {
+        const saveResult = await apiFetch(`${BASE_URL}/system/save-log`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -86,16 +161,17 @@ export default function TestUsers() {
           alert("Test user registered but failed to save logs.");
         }
 
-        setSuccessMessage(
-          `Test user registered successfully with email: ${registerUser.email}, Id: ${data.uid}`,
-        );
+        setSuccessData({
+          email: registerUser.email,
+          uid: data.uid,
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+        });
         setErrorMessage("");
         setRequestState("success");
         setHasRegistered(true);
 
-        // Update login user to the registered user
         setLoginUser(registerUser);
-        // Generate new register user for next registration
         setRegisterUser(generateUser());
 
         stateTimeoutRef.current = window.setTimeout(() => {
@@ -105,7 +181,7 @@ export default function TestUsers() {
       } else {
         const errorData = await result.json();
         setErrorMessage(`Error registering test user: ${errorData.message}`);
-        setSuccessMessage("");
+        setSuccessData(null);
         setRequestState("error");
 
         stateTimeoutRef.current = window.setTimeout(() => {
@@ -115,7 +191,7 @@ export default function TestUsers() {
       }
     } catch {
       setErrorMessage("Error registering test user: Network error.");
-      setSuccessMessage("");
+      setSuccessData(null);
       setRequestState("error");
 
       stateTimeoutRef.current = window.setTimeout(() => {
@@ -154,15 +230,18 @@ export default function TestUsers() {
 }`}
       />
 
-      {successMessage && (
-        <div className="p-4 bg-green-100 text-green-800 rounded-2xl">
-          {successMessage}
-        </div>
-      )}
+      {successData && <SuccessBox data={successData} />}
 
       {errorMessage && (
-        <div className="p-4 bg-red-100 text-red-800 rounded-2xl">
-          {errorMessage}
+        <div className="rounded-2xl border border-red-200 bg-red-50 overflow-hidden">
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-red-500">
+            <span className="text-white font-semibold text-sm">
+              Registration failed
+            </span>
+          </div>
+          <p className="px-4 py-3 text-sm text-red-800 font-mono">
+            {errorMessage}
+          </p>
         </div>
       )}
 

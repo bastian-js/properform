@@ -13,8 +13,9 @@ export default function PostRegister() {
 
       <Text>
         Creates a new user account with fitness profile information. Sends a
-        verification email with a 6-digit code that must be confirmed before
-        login. Rate limited to 5 requests per 15 minutes.
+        verification email with a 6-digit code. Rate limited to 5 requests per
+        15 minutes. An optional invite code can be provided to link the user to
+        a trainer.
       </Text>
 
       <Heading>Request Body</Heading>
@@ -32,7 +33,8 @@ export default function PostRegister() {
   "fitness_level": "intermediate",
   "training_frequency": 4,
   "primary_goal": "muscle_gain",
-  "stayLoggedIn": true
+  "stayLoggedIn": true,
+  "invite_code": "ABC123"
 }`}
       />
 
@@ -40,18 +42,19 @@ export default function PostRegister() {
       <CodeBlock
         language="json"
         code={`{
-  "firstname": "string (required)",
-  "birthdate": "string (required, YYYY-MM-DD)",
-  "email": "string (required, valid email)",
-  "password": "string (required, 8+ chars)",
-  "weight": "number (required, kg)",
-  "height": "number (required, cm)",
-  "gender": "string (required)",
+  "firstname":            "string (required)",
+  "birthdate":            "string (required, YYYY-MM-DD)",
+  "email":                "string (required, valid email)",
+  "password":             "string (required, 8+ chars)",
+  "weight":               "number (required, kg)",
+  "height":               "number (required, cm)",
+  "gender":               "string (required)",
   "onboarding_completed": "boolean (required)",
-  "fitness_level": "string (required)",
-  "training_frequency": "number (required)",
-  "primary_goal": "string (required)",
-  "stayLoggedIn": "boolean (optional)"
+  "fitness_level":        "string (required)",
+  "training_frequency":   "number (required)",
+  "primary_goal":         "string (required)",
+  "stayLoggedIn":         "boolean (optional)",
+  "invite_code":          "string (optional)"
 }`}
       />
 
@@ -67,7 +70,8 @@ export default function PostRegister() {
         language="json"
         code={`{
   "message": "user successfully created.",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "uid": 42
 }`}
       />
@@ -80,14 +84,19 @@ export default function PostRegister() {
   "error": "please fill all required fields."
 }
 
-// Invalid password (400)
+// Invalid password format (400)
 {
-  "error": "password must be at least 8 characters..."
+  "error": "password must be at least 8 characters long and contain uppercase, lowercase, number, and special character."
 }
 
-// Invalid email (400)
+// Invalid email format (400)
 {
   "error": "invalid email address."
+}
+
+// Invalid invite code (400)
+{
+  "error": "invalid invite code."
 }
 
 // Email already registered (409)
@@ -95,23 +104,18 @@ export default function PostRegister() {
   "error": "email already registered."
 }
 
-// Verification email failed (201)
-{
-  "message": "user created but verification email failed.",
-  "error": "error details"
-}
-
 // Server error (500)
 {
-  "message": "failed to create user.",
+  "message": "registration failed.",
   "error": "error details"
 }`}
       />
 
       <Heading>Token Expiration</Heading>
       <Text>
-        If <code>stayLoggedIn</code> is true, the token expires in 60 days.
-        Otherwise it expires in 3 days.
+        The access token expires in 15 minutes. The refresh token expires in 60
+        days if <code>stayLoggedIn</code> is <code>true</code>, otherwise in 3
+        days.
       </Text>
     </div>
   );

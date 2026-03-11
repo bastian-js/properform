@@ -7,6 +7,7 @@ import PutExercisesEid from "./pages/api-reference/admin/put-exercise-eid";
 // auth
 import PostAdminLogin from "./pages/api-reference/auth/post-admin-login";
 import PostAdminRegister from "./pages/api-reference/auth/post-admin-register";
+import PostLogout from "./pages/api-reference/auth/post-logout";
 import PostCheckVerificationCode from "./pages/api-reference/auth/post-check-verification-code";
 import PostLogin from "./pages/api-reference/auth/post-login";
 import PostRegister from "./pages/api-reference/auth/post-register";
@@ -84,6 +85,7 @@ export const apiRoutes = [
     path: "api/auth/reset-password/:token",
     element: <PostResetPasswordToken />,
   },
+  { path: "api/auth/logout", element: <PostLogout /> },
 
   // users
   { path: "api/users", element: <GetUsers /> },

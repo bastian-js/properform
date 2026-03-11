@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
+import { apiFetch } from "./helpers/apiFetch";
 
 export default function App() {
   const navigate = useNavigate();
@@ -18,13 +19,8 @@ export default function App() {
       }
 
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           "https://api.properform.app/auth/verify-token",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
         );
 
         if (!response.ok) {

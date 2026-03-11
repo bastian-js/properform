@@ -38,7 +38,8 @@ password  (string, required)`}
         language="json"
         code={`{
   "message": "admin login successful.",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }`}
       />
 
@@ -62,7 +63,11 @@ password  (string, required)`}
       />
 
       <Heading>Token Expiration</Heading>
-      <Text>Admin tokens expire in 1 hour.</Text>
+      <Text>
+        The access token expires in 15 minutes. The refresh token expires in 30
+        days and is stored server-side. The access token payload includes the
+        user&apos;s uid, email, and role (<code>owner</code>).
+      </Text>
     </div>
   );
 }
