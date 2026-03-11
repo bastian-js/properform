@@ -69,13 +69,31 @@ router.post(
         user.uid,
       ]);
 
-      const token = jwt.sign(
+      const accessToken = jwt.sign(
         { uid: user.uid, email: user.email, role: "owner" },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" },
+        { expiresIn: "15m" },
       );
 
-      res.json({ message: "admin login successful.", token });
+      const refreshToken = jwt.sign(
+        { uid: user.uid, type: "refresh" },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: "30d" },
+      );
+
+      await db.query(
+        `
+        INSERT INTO refresh_tokens (uid, token, expires_at)
+        VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 DAY))
+        `,
+        [user.uid, refreshToken],
+      );
+
+      res.json({
+        message: "admin login successful.",
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
     } catch (error) {
       console.error("admin login error:", error);
       res.status(500).json({ error: "server error: " + error.message });

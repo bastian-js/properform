@@ -61,6 +61,8 @@ router.post(
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]{8,}$/;
 
@@ -73,7 +75,7 @@ router.post(
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       return res.status(400).json({
         error: "invalid email address.",
       });
@@ -101,7 +103,7 @@ router.post(
         [
           firstname,
           birthdate,
-          email,
+          normalizedEmail,
           hashedPassword,
           weight,
           height,
@@ -143,12 +145,24 @@ router.post(
       await connection.commit();
       connection.release();
 
-      const token = jwt.sign(
+      const accessToken = jwt.sign(
         { uid: newUserId, role: "user" },
         process.env.JWT_SECRET,
-        {
-          expiresIn: stayLoggedIn ? "60d" : "3d",
-        },
+        { expiresIn: "15m" },
+      );
+
+      const refreshToken = jwt.sign(
+        { uid: newUserId, type: "refresh" },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: stayLoggedIn ? "60d" : "3d" },
+      );
+
+      await db.query(
+        `
+        INSERT INTO refresh_tokens (uid, token, expires_at)
+        VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? DAY))
+        `,
+        [newUserId, refreshToken, stayLoggedIn ? 60 : 3],
       );
 
       const { subject, text, html } = buildVerificationEmail(
@@ -159,7 +173,7 @@ router.post(
       mailer
         .sendMail({
           from: '"ProPerform" <no-reply@properform.app>',
-          to: email,
+          to: normalizedEmail,
           subject,
           text,
           html,
@@ -168,7 +182,8 @@ router.post(
 
       return res.status(201).json({
         message: "user successfully created.",
-        token,
+        access_token: accessToken,
+        refresh_token: refreshToken,
         uid: newUserId,
       });
     } catch (error) {
@@ -215,6 +230,12 @@ router.post("/login", async (req, res) => {
 
     const user = rows[0];
 
+    if (user.role_id !== 2) {
+      return res
+        .status(403)
+        .json({ message: "owners must use the admin login." });
+    }
+
     const valid = await bcrypt.compare(password, user.password_hash);
 
     if (!valid) return res.status(401).json({ error: "invalid credentials." });
@@ -227,21 +248,31 @@ router.post("/login", async (req, res) => {
       user.uid,
     ]);
 
-    const userRole = user.role_id === 1 ? "owner" : "user";
-
-    const token = jwt.sign(
-      { uid: user.uid, role: userRole },
+    const accessToken = jwt.sign(
+      { uid: user.uid, role: "user" },
       process.env.JWT_SECRET,
-      {
-        expiresIn: stayLoggedIn ? "60d" : "3d",
-      },
+      { expiresIn: "15m" },
     );
 
-    res.json({
+    const refreshToken = jwt.sign(
+      { uid: user.uid, type: "refresh" },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: stayLoggedIn ? "60d" : "3d" },
+    );
+
+    await db.query(
+      `
+        INSERT INTO refresh_tokens (uid, token, expires_at)
+        VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? DAY))
+        `,
+      [user.uid, refreshToken, stayLoggedIn ? 60 : 3],
+    );
+
+    return res.status(200).json({
       message: "login successful.",
-      token,
+      access_token: accessToken,
+      refresh_token: refreshToken,
       uid: user.uid,
-      role: userRole,
     });
   } catch (error) {
     res
