@@ -152,7 +152,7 @@ router.post(
       const accessToken = jwt.sign(
         { uid: newUserId, role: "user" },
         process.env.JWT_SECRET,
-        { expiresIn: "30s" },
+        { expiresIn: "15m" },
       );
 
       const refreshToken = jwt.sign(
