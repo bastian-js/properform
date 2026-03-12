@@ -26,7 +26,7 @@ export default function App() {
         );
 
         if (res.status === 401) {
-          const refreshRes = await apiFetch(
+          const refreshRes = await fetch(
             "https://api.properform.app/auth/refresh",
             {
               method: "POST",
@@ -39,7 +39,6 @@ export default function App() {
 
           if (refreshRes.ok) {
             const data = await refreshRes.json();
-
             localStorage.setItem("token", data.access_token);
           } else {
             localStorage.removeItem("token");
