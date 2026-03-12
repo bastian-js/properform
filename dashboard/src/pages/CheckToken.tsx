@@ -3,7 +3,6 @@ import Text from "../components/Text";
 import Button from "../components/Button";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle, XCircle, Loader } from "lucide-react";
-import { apiFetch } from "../helpers/apiFetch";
 
 interface TokenResponse {
   valid: boolean;
