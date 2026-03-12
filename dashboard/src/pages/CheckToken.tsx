@@ -62,7 +62,11 @@ export default function CheckToken() {
     setRequestState("loading");
 
     try {
-      const result = await apiFetch(`${BASE_URL}/auth/verify-token`);
+      const result = await fetch(`${BASE_URL}/users/me`, {
+        headers: {
+          Authorization: `Bearer ${trimmedToken}`,
+        },
+      });
 
       if (result.ok) {
         const data: TokenResponse = await result.json();
