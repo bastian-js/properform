@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,13 +13,16 @@ import { spacing } from "@/src/theme/spacing";
 import { colors } from "@/src/theme/colors";
 import SecondaryButton from "@/src/components/secondaryButton";
 import api from "@/src/utils/axiosInstance";
+import { useFocusEffect } from "expo-router";
 
 export default function HomeScreen() {
-  const [user, setUser] = React.useState<{
+  const [user, setUser] = useState<{
     firstname: string;
     profile_image_url: string | null;
   } | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = useState(true);
+
+  const [greeting, setGreeting] = useState("");
 
   useEffect(() => {
     const getUserData = async () => {
@@ -36,12 +39,18 @@ export default function HomeScreen() {
     getUserData();
   }, []);
 
-  const getGreeting = () => {
+  const calculateGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Guten Morgen,";
     if (hour < 18) return "Guten Tag,";
     return "Guten Abend,";
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      setGreeting(calculateGreeting());
+    }, []),
+  );
 
   // dummy values for streak
   const streakDays = 4;
@@ -77,7 +86,7 @@ export default function HomeScreen() {
           />
 
           <View style={styles.greetingBlock}>
-            <Text style={styles.goodMorning}>{getGreeting()}</Text>
+            <Text style={styles.goodMorning}>{greeting}</Text>
             <Text style={styles.hello}>{user?.firstname || "..."}</Text>
           </View>
         </View>
