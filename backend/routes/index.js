@@ -13,6 +13,8 @@ import protectedAuthRoutes from "./AuthRoutes/protectedAuthRoutes.js";
 
 import notificationRoutes from "./AdminRoutes/protected/notificationRoutes.js";
 import notificationsMe from "./UserRoutes/Notifications/notificationsMe.js";
+import UserTrainingPlans from "./TrainingPlansRoutes/protected/UserTrainingPlans/index.js";
+import TrainingPlans from "./TrainingPlansRoutes/protected/TrainingPlans/index.js";
 
 const routeMounts = [
   { router: publicUserRoutes, path: "/users", protected: false },
@@ -29,6 +31,8 @@ const routeMounts = [
   { router: protectedAuthRoutes, path: "/auth", protected: true },
   { router: notificationRoutes, path: "/admin", protected: true },
   { router: notificationsMe, path: "/notifications", protected: true },
+  { router: TrainingPlans, path: "/training-plans", protected: true },
+  { router: UserTrainingPlans, path: "/users/training-plans", protected: true },
 ];
 
 const mountRoutes = (app) => {
