@@ -35,11 +35,11 @@ export default function App() {
   }, [navigate, location.pathname]);
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
+    <div className="flex h-screen w-full max-w-full overflow-x-hidden bg-gray-900 text-white">
       {location.pathname === "/login" ? null : <Sidebar />}
-      <div className="flex flex-col flex-1">
+      <div className="flex min-w-0 flex-1 flex-col">
         {location.pathname === "/login" ? null : <Header />}
-        <main className="flex-1 px-8 py-2 overflow-y-auto">
+        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-2 sm:px-8">
           <Outlet />
         </main>
       </div>

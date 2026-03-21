@@ -3,6 +3,8 @@ import GetExercisesEid from "./pages/api-reference/admin/get-exercise-eid";
 import DeleteExercisesEid from "./pages/api-reference/admin/delete-exercise-eid";
 import PostExercisesCreate from "./pages/api-reference/admin/post-exercise-create";
 import PutExercisesEid from "./pages/api-reference/admin/put-exercise-eid";
+import GetMuscleGroups from "./pages/api-reference/admin/get-exercises-muscle-groups";
+import GetNotifications from "./pages/api-reference/admin/get-notifications";
 
 // auth
 import PostAdminLogin from "./pages/api-reference/auth/post-admin-login";
@@ -14,6 +16,7 @@ import PostRegister from "./pages/api-reference/auth/post-register";
 import PostResendVerificationCode from "./pages/api-reference/auth/post-resend-verification-code";
 import PostResetPassword from "./pages/api-reference/auth/post-reset-password";
 import PostResetPasswordToken from "./pages/api-reference/auth/post-reset-password-token";
+import PostAuthRefresh from "./pages/api-reference/auth/post-refresh";
 
 // exercises
 import GetExercises from "./pages/api-reference/exercises/get-exercises";
@@ -23,10 +26,12 @@ import DeleteMediaMid from "./pages/api-reference/media/delete-media-mid";
 import GetMedia from "./pages/api-reference/media/get-media";
 import PostMedia from "./pages/api-reference/media/post-create-media";
 import PutMediaMid from "./pages/api-reference/media/put-media-mid";
+import GetMediaByMid from "./pages/api-reference/media/get-media-mid";
 
 // system
 import GetHealth from "./pages/api-reference/system/get-health";
 import GetHealthcheck from "./pages/api-reference/system/get-healthcheck";
+import PostSystemSaveLog from "./pages/api-reference/system/post-system-save-log";
 
 // trainers
 import DeleteTrainersTid from "./pages/api-reference/trainers/delete-trainer-tid";
@@ -48,9 +53,27 @@ import GetUsersStats from "./pages/api-reference/users/get-users-stats";
 import GetLogsWeight from "./pages/api-reference/weight/get-logs-weight";
 import PostLogsWeight from "./pages/api-reference/weight/post-logs-weight";
 
+// training plans
+import GetTrainingPlans from "./pages/api-reference/training-plans/get-training-plans";
+import PostTrainingPlans from "./pages/api-reference/training-plans/post-training-plans";
+import GetTrainingPlanById from "./pages/api-reference/training-plans/get-training-plans-tpid";
+import PutTrainingPlans from "./pages/api-reference/training-plans/put-training-plans-tpid";
+import DeleteTrainingPlan from "./pages/api-reference/training-plans/delete-training-plans-tpid";
+import GetTrainingPlanExercises from "./pages/api-reference/training-plans/get-training-plans-tpid-exercises";
+import PostTrainingPlanExercises from "./pages/api-reference/training-plans/post-training-plans-tpid-exercises";
+import PutTrainingPlanExercise from "./pages/api-reference/training-plans/put-training-plans-tpid-exercises-id";
+import DeleteTrainingPlanExercise from "./pages/api-reference/training-plans/delete-training-plans-tpid-exercises-id";
+import GetUserTrainingPlans from "./pages/api-reference/training-plans/get-users-training-plans";
+import PostUserTrainingPlans from "./pages/api-reference/training-plans/post-users-training-plans";
+import GetUserSelectedTrainingPlan from "./pages/api-reference/training-plans/get-users-training-plans-selected";
+import GetCurrentTrainingWithExercises from "./pages/api-reference/training-plans/get-users-training-plans-start-current";
+import PatchSelectUserTrainingPlan from "./pages/api-reference/training-plans/patch-users-training-plans-id-select";
+import DeleteUserTrainingPlan from "./pages/api-reference/training-plans/delete-users-training-plans-id";
+
 import RequestBodys from "./pages/docs/request-bodys";
 import ErrorResponses from "./pages/docs/error-responses";
 import TestUsers from "./pages/docs/test-users";
+import TrainingPlansImplementation from "./pages/docs/training-plans-implementation";
 
 import Settings from "./pages/Settings";
 import CheckToken from "./pages/docs/check-token";
@@ -65,6 +88,10 @@ export const apiRoutes = [
   { path: "docs/error-responses", element: <ErrorResponses /> },
   { path: "docs/test-users", element: <TestUsers /> },
   { path: "docs/verify-token", element: <CheckToken /> },
+  {
+    path: "docs/training-plans-implementation",
+    element: <TrainingPlansImplementation />,
+  },
 
   // auth
   { path: "api/auth/login", element: <PostLogin /> },
@@ -72,6 +99,7 @@ export const apiRoutes = [
   { path: "api/auth/admin/login", element: <PostAdminLogin /> },
   { path: "api/auth/admin/register", element: <PostAdminRegister /> },
   { path: "api/auth/push-token", element: <PostAuthPushToken /> },
+  { path: "api/auth/refresh", element: <PostAuthRefresh /> },
   {
     path: "api/auth/check-verification-code",
     element: <PostCheckVerificationCode />,
@@ -131,18 +159,71 @@ export const apiRoutes = [
     path: "api/admin/exercises/:eid/update",
     element: <PutExercisesEid />,
   },
+  {
+    path: "api/admin/exercises/muscle-groups",
+    element: <GetMuscleGroups />,
+  },
 
   // media
   { path: "api/media", element: <PostMedia /> },
   { path: "api/media/list", element: <GetMedia /> },
-  { path: "api/media/:mid", element: <DeleteMediaMid /> },
+  { path: "api/media/:mid", element: <GetMediaByMid /> },
+  { path: "api/media/:mid/delete", element: <DeleteMediaMid /> },
   { path: "api/media/:mid/update", element: <PutMediaMid /> },
 
   // notifications
   { path: "api/notifications/me", element: <GetNotificationsMe /> },
   { path: "api/admin/notifications/send", element: <PostNotificationsSend /> },
+  { path: "api/admin/notifications", element: <GetNotifications /> },
 
   // system
   { path: "api/system/health", element: <GetHealth /> },
   { path: "api/system/healthcheck", element: <GetHealthcheck /> },
+  { path: "api/system/save-log", element: <PostSystemSaveLog /> },
+
+  // training plans
+  { path: "api/training-plans", element: <GetTrainingPlans /> },
+  { path: "api/training-plans/create", element: <PostTrainingPlans /> },
+  { path: "api/training-plans/:tpid", element: <GetTrainingPlanById /> },
+  { path: "api/training-plans/:tpid/update", element: <PutTrainingPlans /> },
+  { path: "api/training-plans/:tpid/delete", element: <DeleteTrainingPlan /> },
+  {
+    path: "api/training-plans/:tpid/exercises",
+    element: <GetTrainingPlanExercises />,
+  },
+  {
+    path: "api/training-plans/:tpid/exercises/add",
+    element: <PostTrainingPlanExercises />,
+  },
+  {
+    path: "api/training-plans/:tpid/exercises/:id/update",
+    element: <PutTrainingPlanExercise />,
+  },
+  {
+    path: "api/training-plans/:tpid/exercises/:id/delete",
+    element: <DeleteTrainingPlanExercise />,
+  },
+
+  // user training plans
+  { path: "api/users/training-plans", element: <GetUserTrainingPlans /> },
+  {
+    path: "api/users/training-plans/assign",
+    element: <PostUserTrainingPlans />,
+  },
+  {
+    path: "api/users/training-plans/selected",
+    element: <GetUserSelectedTrainingPlan />,
+  },
+  {
+    path: "api/users/training-plans/start/current",
+    element: <GetCurrentTrainingWithExercises />,
+  },
+  {
+    path: "api/users/training-plans/:id/select",
+    element: <PatchSelectUserTrainingPlan />,
+  },
+  {
+    path: "api/users/training-plans/:id/delete",
+    element: <DeleteUserTrainingPlan />,
+  },
 ];

@@ -31,6 +31,10 @@ export const navLinks: NavLink[] = [
     icon: <BookOpen size={20} />,
     label: "Dokumentation",
     subLinks: [
+      {
+        to: "/docs/training-plans-implementation",
+        label: "Training Plans Guide",
+      },
       { to: "/docs/test-users", label: "Test Users" },
       { to: "/docs/error-responses", label: "Error Responses" },
       { to: "/docs/verify-token", label: "Verify Token" },
@@ -53,7 +57,6 @@ export const navLinks: NavLink[] = [
             label: "POST /auth/admin/register",
           },
           { to: "/api/auth/admin/login", label: "POST /auth/admin/login" },
-
           {
             to: "/api/auth/check-verification-code",
             label: "POST /auth/check-verification-code",
@@ -73,6 +76,10 @@ export const navLinks: NavLink[] = [
           {
             to: "/api/auth/push-token",
             label: "POST /auth/push-token",
+          },
+          {
+            to: "/api/auth/refresh",
+            label: "POST /auth/refresh",
           },
         ],
       },
@@ -113,6 +120,10 @@ export const navLinks: NavLink[] = [
             to: "/api/admin/exercises/:eid/update",
             label: "PUT /admin/exercises/:eid",
           },
+          {
+            to: "/api/admin/exercises/muscle-groups",
+            label: "GET /admin/exercises/muscle-groups",
+          },
         ],
       },
       {
@@ -150,7 +161,8 @@ export const navLinks: NavLink[] = [
         subLinks: [
           { to: "/api/media", label: "POST /media" },
           { to: "/api/media/list", label: "GET /media" },
-          { to: "/api/media/:mid", label: "DELETE /media/:mid" },
+          { to: "/api/media/:mid", label: "GET /media/:mid" },
+          { to: "/api/media/:mid/delete", label: "DELETE /media/:mid" },
           { to: "/api/media/:mid/update", label: "PUT /media/:mid" },
         ],
       },
@@ -160,7 +172,11 @@ export const navLinks: NavLink[] = [
           { to: "/api/notifications/me", label: "GET /notifications/me" },
           {
             to: "/api/admin/notifications/send",
-            label: "POST /notifications/send",
+            label: "POST /admin/notifications/send",
+          },
+          {
+            to: "/api/admin/notifications",
+            label: "GET /admin/notifications",
           },
         ],
       },
@@ -169,6 +185,71 @@ export const navLinks: NavLink[] = [
         subLinks: [
           { to: "/api/system/health", label: "GET /system/health" },
           { to: "/api/system/healthcheck", label: "GET /system/healthcheck" },
+          { to: "/api/system/save-log", label: "POST /system/save-log" },
+        ],
+      },
+      {
+        label: "Training Plans",
+        subLinks: [
+          { to: "/api/training-plans", label: "GET /training-plans" },
+          { to: "/api/training-plans/create", label: "POST /training-plans" },
+          {
+            to: "/api/training-plans/:tpid",
+            label: "GET /training-plans/:tpid",
+          },
+          {
+            to: "/api/training-plans/:tpid/update",
+            label: "PUT /training-plans/:tpid",
+          },
+          {
+            to: "/api/training-plans/:tpid/delete",
+            label: "DELETE /training-plans/:tpid",
+          },
+          {
+            to: "/api/training-plans/:tpid/exercises",
+            label: "GET /training-plans/:tpid/exercises",
+          },
+          {
+            to: "/api/training-plans/:tpid/exercises/add",
+            label: "POST /training-plans/:tpid/exercises",
+          },
+          {
+            to: "/api/training-plans/:tpid/exercises/:id/update",
+            label: "PUT /training-plans/:tpid/exercises/:id",
+          },
+          {
+            to: "/api/training-plans/:tpid/exercises/:id/delete",
+            label: "DELETE /training-plans/:tpid/exercises/:id",
+          },
+        ],
+      },
+      {
+        label: "User Training Plans",
+        subLinks: [
+          {
+            to: "/api/users/training-plans",
+            label: "GET /users/training-plans",
+          },
+          {
+            to: "/api/users/training-plans/assign",
+            label: "POST /users/training-plans",
+          },
+          {
+            to: "/api/users/training-plans/selected",
+            label: "GET /users/training-plans/selected",
+          },
+          {
+            to: "/api/users/training-plans/start/current",
+            label: "GET /users/training-plans/start/current",
+          },
+          {
+            to: "/api/users/training-plans/:id/select",
+            label: "PATCH /users/training-plans/:id/select",
+          },
+          {
+            to: "/api/users/training-plans/:id/delete",
+            label: "DELETE /users/training-plans/:id",
+          },
         ],
       },
     ],
