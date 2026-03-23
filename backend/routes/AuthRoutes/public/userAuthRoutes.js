@@ -4,6 +4,7 @@ import { db } from "../../../db.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { mailer } from "../../../helpers/mailer.js";
+import { requireAuth } from "../../../middleware/auth.js";
 
 import { buildVerificationEmail } from "../../../helpers/buildMails.js";
 
@@ -72,7 +73,8 @@ router.post(
 
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
-        error: "password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.",
+        error:
+          "password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.",
       });
     }
 
@@ -296,6 +298,24 @@ router.post("/logout", async (req, res) => {
     ]);
 
     return res.status(200).json({ message: "logout successful." });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "logout failed.", error: error.message });
+  }
+});
+
+router.post("/logout/all", requireAuth, async (req, res) => {
+  const uid = req.user.uid;
+
+  if (!uid) {
+    return res.status(400).json({ error: "user id is required." });
+  }
+
+  try {
+    await db.query("DELETE FROM refresh_tokens WHERE uid = ?", [uid]);
+
+    return res.status(200).json({ message: "all sessions logged out." });
   } catch (error) {
     return res
       .status(500)
