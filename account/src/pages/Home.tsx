@@ -18,6 +18,8 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../helpers/apiFetch";
 import "../styles/account.css";
 
+const LOGOUT_ALL_LOCK_KEY = "pf_logout_all_locked";
+
 interface UserData {
   uid: number;
   firstname: string;
@@ -49,6 +51,9 @@ export default function Account() {
   const [logoutAllLoading, setLogoutAllLoading] = useState(false);
   const [logoutAllInfo, setLogoutAllInfo] = useState("");
   const [logoutAllError, setLogoutAllError] = useState("");
+  const [logoutAllLocked, setLogoutAllLocked] = useState(
+    () => localStorage.getItem(LOGOUT_ALL_LOCK_KEY) === "1",
+  );
 
   useEffect(() => {
     fetchUser();
@@ -126,6 +131,11 @@ export default function Account() {
   };
 
   const handleLogoutEverywhere = async () => {
+    if (logoutAllLocked) {
+      setLogoutAllInfo("This might take a while to affect all devices.");
+      return;
+    }
+
     setLogoutAllLoading(true);
     setLogoutAllInfo("");
     setLogoutAllError("");
@@ -147,6 +157,8 @@ export default function Account() {
           data?.message || data?.error || "Could not sign out all devices.",
         );
       } else {
+        localStorage.setItem(LOGOUT_ALL_LOCK_KEY, "1");
+        setLogoutAllLocked(true);
         setLogoutAllInfo("This might take a while to affect all devices.");
       }
     } catch {
@@ -469,12 +481,14 @@ export default function Account() {
               <button
                 className="account-btn-secondary account-btn-danger"
                 onClick={handleLogoutEverywhere}
-                disabled={logoutAllLoading}
+                disabled={logoutAllLoading || logoutAllLocked}
               >
-                <LogOut size={14} />
+                {logoutAllLocked ? <Lock size={14} /> : <LogOut size={14} />}
                 {logoutAllLoading
                   ? "Signing out everywhere..."
-                  : "Sign Out Everywhere"}
+                  : logoutAllLocked
+                    ? "Sign Out Everywhere"
+                    : "Sign Out Everywhere"}
               </button>
             </div>
           </div>

@@ -3,6 +3,8 @@ import { Eye, EyeOff, AlertCircle, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
 
+const LOGOUT_ALL_LOCK_KEY = "pf_logout_all_locked";
+
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -43,6 +45,7 @@ export default function Login() {
         // Store tokens
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("refresh_token", data.refresh_token);
+        localStorage.removeItem(LOGOUT_ALL_LOCK_KEY);
         // Redirect to account page
         navigate("/");
       }
