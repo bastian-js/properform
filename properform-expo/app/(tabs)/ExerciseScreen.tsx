@@ -64,6 +64,15 @@ const categoryToFilter = (category: string): string => {
   return map[category] ?? "gym";
 };
 
+const getExerciseSportIcon = (sid: number) => {
+  const iconMap: Record<number, string> = {
+    1: "fitness-center",
+    2: "sports-basketball",
+  };
+
+  return (iconMap[sid] ?? "sports") as any;
+};
+
 const categories = ["Gym", "Basketball"];
 const LIMIT = 10;
 
@@ -228,7 +237,7 @@ export default function ExerciseScreen() {
                     />
                   ) : (
                     <Icon
-                      name="fitness-center"
+                      name={getExerciseSportIcon(exercise.sid)}
                       size={22}
                       color={colors.primaryBlue}
                     />
