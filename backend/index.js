@@ -41,7 +41,7 @@ function getRoutesFromMounts(mounts) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set("trust proxy", true);
+app.set("trust proxy", 1);
 
 const allowedOrigins = [
   "http://localhost:5173",

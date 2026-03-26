@@ -3,7 +3,7 @@ import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 export function createRateLimiter({
   windowMs = 15 * 60 * 1000,
   max = 100,
-  key = "ip", // "ip" | "user"
+  key = "ip",
 } = {}) {
   return rateLimit({
     windowMs,
@@ -15,11 +15,11 @@ export function createRateLimiter({
       if (key === "user" && req.user?.uid) {
         return `user:${req.user.uid}`;
       }
-
-      return ipKeyGenerator(req);
+      return req.ip;
     },
 
     handler: (req, res) => {
+      console.log("RATE LIMIT HIT");
       res.status(429).json({
         error: "rate_limit.",
         message: "too many requests.",
