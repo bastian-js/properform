@@ -209,81 +209,86 @@ router.post(
   },
 );
 
-router.post("/login", async (req, res) => {
-  let { email, password, stayLoggedIn } = req.body;
+router.post(
+  "/login",
+  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 5 }),
+  async (req, res) => {
+    let { email, password, stayLoggedIn } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({
-      error: "please fill all required fields.",
-    });
-  }
-
-  email = email.trim().toLowerCase();
-
-  if (stayLoggedIn !== undefined && typeof stayLoggedIn !== "boolean") {
-    return res.status(400).json({
-      error: "invalid value for stayloggedin.",
-    });
-  }
-
-  try {
-    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
-      email,
-    ]);
-
-    if (!rows.length)
-      return res.status(401).json({ error: "invalid credentials." });
-
-    const user = rows[0];
-
-    if (user.role_id !== 2) {
-      return res
-        .status(403)
-        .json({ message: "owners must use the admin login." });
+    if (!email || !password) {
+      return res.status(400).json({
+        error: "please fill all required fields.",
+      });
     }
 
-    const valid = await bcrypt.compare(password, user.password_hash);
+    email = email.trim().toLowerCase();
 
-    if (!valid) return res.status(401).json({ error: "invalid credentials." });
-
-    if (!user.email_verified) {
-      return res.status(403).json({ error: "email not verified." });
+    if (stayLoggedIn !== undefined && typeof stayLoggedIn !== "boolean") {
+      return res.status(400).json({
+        error: "invalid value for stayloggedin.",
+      });
     }
 
-    await db.query("UPDATE users SET last_login = NOW() WHERE uid = ?", [
-      user.uid,
-    ]);
+    try {
+      const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
+        email,
+      ]);
 
-    const accessToken = jwt.sign(
-      { uid: user.uid, role: "user" },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" },
-    );
+      if (!rows.length)
+        return res.status(401).json({ error: "invalid credentials." });
 
-    const refreshToken = jwt.sign(
-      { uid: user.uid, type: "refresh" },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: stayLoggedIn ? "60d" : "3d" },
-    );
+      const user = rows[0];
 
-    await db.query(
-      `
+      if (user.role_id !== 2) {
+        return res
+          .status(403)
+          .json({ message: "owners must use the admin login." });
+      }
+
+      const valid = await bcrypt.compare(password, user.password_hash);
+
+      if (!valid)
+        return res.status(401).json({ error: "invalid credentials." });
+
+      if (!user.email_verified) {
+        return res.status(403).json({ error: "email not verified." });
+      }
+
+      await db.query("UPDATE users SET last_login = NOW() WHERE uid = ?", [
+        user.uid,
+      ]);
+
+      const accessToken = jwt.sign(
+        { uid: user.uid, role: "user" },
+        process.env.JWT_SECRET,
+        { expiresIn: "15m" },
+      );
+
+      const refreshToken = jwt.sign(
+        { uid: user.uid, type: "refresh" },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: stayLoggedIn ? "60d" : "3d" },
+      );
+
+      await db.query(
+        `
         INSERT INTO refresh_tokens (uid, token, expires_at)
         VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? DAY))
         `,
-      [user.uid, refreshToken, stayLoggedIn ? 60 : 3],
-    );
+        [user.uid, refreshToken, stayLoggedIn ? 60 : 3],
+      );
 
-    return res.status(200).json({
-      message: "login successful.",
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      uid: user.uid,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "login failed.", error: error.message });
-  }
-});
+      return res.status(200).json({
+        message: "login successful.",
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        uid: user.uid,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "login failed.", error: error.message });
+    }
+  },
+);
 
 router.post("/logout", async (req, res) => {
   const { refresh_token } = req.body;
@@ -305,22 +310,27 @@ router.post("/logout", async (req, res) => {
   }
 });
 
-router.post("/logout/all", requireAuth, async (req, res) => {
-  const uid = req.user.uid;
+router.post(
+  "/logout/all",
+  requireAuth,
+  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 5 }),
+  async (req, res) => {
+    const uid = req.user.uid;
 
-  if (!uid) {
-    return res.status(400).json({ error: "user id is required." });
-  }
+    if (!uid) {
+      return res.status(400).json({ error: "user id is required." });
+    }
 
-  try {
-    await db.query("DELETE FROM refresh_tokens WHERE uid = ?", [uid]);
+    try {
+      await db.query("DELETE FROM refresh_tokens WHERE uid = ?", [uid]);
 
-    return res.status(200).json({ message: "all sessions logged out." });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "logout failed.", error: error.message });
-  }
-});
+      return res.status(200).json({ message: "all sessions logged out." });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "logout failed.", error: error.message });
+    }
+  },
+);
 
 export default router;
