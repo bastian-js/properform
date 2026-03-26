@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { colors } from "@/src/theme/colors";
 import { typography } from "@/src/theme/typography";
 import { spacing } from "@/src/theme/spacing";
@@ -234,7 +235,15 @@ export default function WorkoutModal({
     0,
   );
 
-  const finishWorkout = () => {
+  const finishWorkout = async () => {
+    await AsyncStorage.setItem(
+      "last_workout",
+      JSON.stringify({
+        name: planName || "Workout",
+        duration: seconds,
+        date: new Date().toISOString(),
+      }),
+    );
     stopTimer();
     setIsFinished(true);
   };

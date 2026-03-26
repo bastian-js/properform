@@ -44,6 +44,23 @@ const getCurrentWeekDates = () => {
 const getStreakLabel = (days: number) =>
   `${days} ${days === 1 ? "Tag" : "Tage"} aktiv`;
 
+const formatWorkoutDuration = (totalSeconds: number) => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  if (minutes === 0) {
+    return `${seconds} Sek.`;
+  }
+
+  return `${minutes} min ${String(seconds).padStart(2, "0")} s`;
+};
+
+type LastWorkout = {
+  name: string;
+  duration: number;
+  date: string;
+};
+
 export default function HomeScreen() {
   const [user, setUser] = useState<{
     firstname: string;
@@ -53,6 +70,7 @@ export default function HomeScreen() {
   const [greeting, setGreeting] = useState("");
   const [streakDays, setStreakDays] = useState(0);
   const [completed, setCompleted] = useState<boolean[]>(Array(7).fill(false));
+  const [lastWorkout, setLastWorkout] = useState<LastWorkout | null>(null);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -115,11 +133,23 @@ export default function HomeScreen() {
     setCompleted(weekDates.map((d) => weekVisits.includes(d)));
   }, []);
 
+  const loadLastWorkout = useCallback(async () => {
+    const storedWorkout = await AsyncStorage.getItem("last_workout");
+
+    if (!storedWorkout) {
+      setLastWorkout(null);
+      return;
+    }
+
+    setLastWorkout(JSON.parse(storedWorkout));
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       setGreeting(calculateGreeting());
       void loadAndUpdateStreak();
-    }, [loadAndUpdateStreak]),
+      void loadLastWorkout();
+    }, [loadAndUpdateStreak, loadLastWorkout]),
   );
   const days = ["M", "D", "M", "D", "F", "S", "S"];
 
@@ -190,13 +220,45 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* wöchentliches ziel noch dummy */}
-        <View style={styles.weeklyGoalWrap}>
-          {/* dummy progresscircle */}
-          <View style={styles.goalDummyCircle}>
-            <Text style={styles.goalPercent}>50%</Text>
-            <Text style={styles.goalLabel}>WÖCHENTLICHES ZIEL</Text>
+        <View style={styles.card}>
+          <View style={styles.lastWorkoutHeader}>
+            <Text style={styles.lastWorkoutTitle}>Letztes Workout</Text>
+            {lastWorkout ? (
+              <View style={styles.lastWorkoutBadge}>
+                <Text style={styles.lastWorkoutBadgeText}>
+                  {new Date(lastWorkout.date).toLocaleDateString("de-AT")}
+                </Text>
+              </View>
+            ) : null}
           </View>
+
+          {lastWorkout ? (
+            <>
+              <Text style={styles.lastWorkoutName}>{lastWorkout.name}</Text>
+              <View style={styles.lastWorkoutInfoRow}>
+                <View style={styles.lastWorkoutInfoCard}>
+                  <Text style={styles.lastWorkoutInfoLabel}>Dauer</Text>
+                  <Text style={styles.lastWorkoutInfoValue}>
+                    {formatWorkoutDuration(lastWorkout.duration)}
+                  </Text>
+                </View>
+
+                <View style={styles.lastWorkoutInfoCard}>
+                  <Text style={styles.lastWorkoutInfoLabel}>Status</Text>
+                  <Text style={styles.lastWorkoutInfoValue}>Abgeschlossen</Text>
+                </View>
+              </View>
+            </>
+          ) : (
+            <>
+              <Text style={styles.lastWorkoutName}>
+                Noch kein Workout gespeichert
+              </Text>
+              <Text style={styles.lastWorkoutEmptyText}>
+                Sobald du ein Training beendest, erscheint es hier.
+              </Text>
+            </>
+          )}
         </View>
 
         {/* heutiges vorgeschlagenes training dummy */}
@@ -353,36 +415,76 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  // weekly goal
-  weeklyGoalWrap: {
+  lastWorkoutHeader: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.xl,
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
+    gap: spacing.sm,
   },
 
-  goalDummyCircle: {
-    width: 200,
-    height: 200,
-    borderRadius: 999,
-    borderWidth: 16,
-    borderColor: "#D1D5DB40",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.background,
-  },
-
-  goalPercent: {
+  lastWorkoutTitle: {
     fontFamily: "Inter",
-    fontSize: 40,
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    flex: 1,
+  },
+
+  lastWorkoutBadge: {
+    backgroundColor: "#EEF4FF",
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+
+  lastWorkoutBadgeText: {
+    fontFamily: "Inter",
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primaryBlue,
+  },
+
+  lastWorkoutName: {
+    fontFamily: "Inter",
+    fontSize: 24,
     fontWeight: "900",
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
 
-  goalLabel: {
+  lastWorkoutInfoRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+
+  lastWorkoutInfoCard: {
+    flex: 1,
+    backgroundColor: colors.background,
+    borderRadius: 16,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+
+  lastWorkoutInfoLabel: {
     fontFamily: "Inter",
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 2,
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+    letterSpacing: 0.5,
+  },
+
+  lastWorkoutInfoValue: {
+    fontFamily: "Inter",
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+
+  lastWorkoutEmptyText: {
+    fontFamily: "Inter",
+    fontSize: 14,
     color: colors.textSecondary,
   },
 
