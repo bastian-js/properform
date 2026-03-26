@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { typography } from "@/src/theme/typography";
 import { spacing } from "@/src/theme/spacing";
 import { colors } from "@/src/theme/colors";
@@ -15,14 +16,43 @@ import SecondaryButton from "@/src/components/secondaryButton";
 import api from "@/src/utils/axiosInstance";
 import { useFocusEffect } from "expo-router";
 
+const getTodayString = () => new Date().toISOString().split("T")[0];
+
+const getYesterdayString = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split("T")[0];
+};
+
+const getCurrentWeekDates = () => {
+  const today = new Date();
+  const day = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+
+  const dates: string[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    dates.push(d.toISOString().split("T")[0]);
+  }
+
+  return dates;
+};
+
+const getStreakLabel = (days: number) =>
+  `${days} ${days === 1 ? "Tag" : "Tage"} aktiv`;
+
 export default function HomeScreen() {
   const [user, setUser] = useState<{
     firstname: string;
     profile_image_url: string | null;
   } | null>(null);
   const [loading, setLoading] = useState(true);
-
   const [greeting, setGreeting] = useState("");
+  const [streakDays, setStreakDays] = useState(0);
+  const [completed, setCompleted] = useState<boolean[]>(Array(7).fill(false));
 
   useEffect(() => {
     const getUserData = async () => {
@@ -46,16 +76,52 @@ export default function HomeScreen() {
     return "Guten Abend,";
   };
 
+  const loadAndUpdateStreak = useCallback(async () => {
+    const today = getTodayString();
+
+    const lastVisit = await AsyncStorage.getItem("home_streak_last_visit");
+    const storedStreak = await AsyncStorage.getItem("home_streak_current");
+    const storedWeekVisits = await AsyncStorage.getItem(
+      "home_streak_week_visits",
+    );
+
+    let current = storedStreak ? parseInt(storedStreak, 10) : 0;
+    let weekVisits: string[] = storedWeekVisits
+      ? JSON.parse(storedWeekVisits)
+      : [];
+
+    if (lastVisit === today) {
+    } else if (lastVisit === getYesterdayString()) {
+      current += 1;
+    } else {
+      current = 1;
+    }
+
+    if (!weekVisits.includes(today)) {
+      weekVisits = [...weekVisits, today];
+    }
+
+    const weekDates = getCurrentWeekDates();
+    weekVisits = weekVisits.filter((d) => weekDates.includes(d));
+
+    await AsyncStorage.setItem("home_streak_last_visit", today);
+    await AsyncStorage.setItem("home_streak_current", String(current));
+    await AsyncStorage.setItem(
+      "home_streak_week_visits",
+      JSON.stringify(weekVisits),
+    );
+
+    setStreakDays(current);
+    setCompleted(weekDates.map((d) => weekVisits.includes(d)));
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       setGreeting(calculateGreeting());
-    }, []),
+      void loadAndUpdateStreak();
+    }, [loadAndUpdateStreak]),
   );
-
-  // dummy values for streak
-  const streakDays = 4;
   const days = ["M", "D", "M", "D", "F", "S", "S"];
-  const completed = [true, true, true, true, false, false, false];
 
   if (loading) {
     return (
@@ -91,14 +157,15 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* streak card noch dummy */}
         <View style={styles.card}>
           <View style={styles.streakHeader}>
-            <Text style={styles.streakTitle}>Wochen-Streak</Text>
+            <Text style={styles.streakTitle}>Besuch-Streak</Text>
 
             <View style={styles.streakRight}>
               <Text style={styles.fire}>🔥</Text>
-              <Text style={styles.streakActive}>{streakDays} Tage aktiv</Text>
+              <Text style={styles.streakActive}>
+                {getStreakLabel(streakDays)}
+              </Text>
             </View>
           </View>
 
