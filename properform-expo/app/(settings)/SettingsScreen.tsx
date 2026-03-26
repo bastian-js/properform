@@ -22,20 +22,38 @@ export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = React.useState(false);
 
-  const handleLogout = () => {
-    Alert.alert("Abmelden", "Möchtest du dich wirklich abmelden?", [
-      { text: "Abbrechen", style: "cancel" },
-      {
-        text: "Abmelden",
-        style: "destructive",
-        onPress: async () => {
-          await SecureStore.deleteItemAsync("access_token");
-          await SecureStore.deleteItemAsync("push_token");
-          await AsyncStorage.removeItem("onboarding_email");
-          router.replace("/(auth)/LoginScreen");
-        },
-      },
+  const clearUserSessionData = async () => {
+    await SecureStore.deleteItemAsync("access_token");
+    await SecureStore.deleteItemAsync("refresh_token");
+    await SecureStore.deleteItemAsync("user_id");
+    await SecureStore.deleteItemAsync("push_token");
+
+    await AsyncStorage.multiRemove([
+      "onboarding_email",
+      "stay_logged_in",
+      "home_streak_last_visit",
+      "home_streak_current",
+      "home_streak_week_visits",
+      "last_workout",
     ]);
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Abmelden",
+      "Möchtest du dich wirklich abmelden? Streak und letztes Workout werden gelöscht.",
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Abmelden",
+          style: "destructive",
+          onPress: async () => {
+            await clearUserSessionData();
+            router.replace("/(auth)/LoginScreen");
+          },
+        },
+      ],
+    );
   };
 
   const handlePasswordReset = async () => {
@@ -87,7 +105,6 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>KONTO</Text>
 
@@ -124,7 +141,6 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Notifications Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>BENACHRICHTIGUNGEN</Text>
 
@@ -166,7 +182,6 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Appearance Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>DARSTELLUNG</Text>
 
@@ -187,7 +202,6 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Support Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>SUPPORT</Text>
 
@@ -216,7 +230,6 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Logout Section */}
         <View style={styles.logoutSection}>
           <TouchableOpacity
             style={styles.logoutButton}
