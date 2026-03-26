@@ -12,7 +12,7 @@ export function createRateLimiter({
     legacyHeaders: false,
 
     keyGenerator: (req) => {
-      if (key === "user" && req.user?.id) {
+      if (key === "user" && req.user?.uid) {
         return `user:${req.user.uid}`;
       }
 
