@@ -18,6 +18,7 @@ import {
   Alert,
   Animated,
   Easing,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -498,7 +499,11 @@ export default function OnboardingScreen() {
 
           <View style={styles.topSection}>
             <View style={styles.logoWrap}>
-              <Icon name="fitness-center" size={36} color={colors.white} />
+              <Image
+                source={require("../../assets/images/logo_ohne_bg.png")}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.ProPerform}>ProPerform</Text>
           </View>
@@ -1208,22 +1213,22 @@ const styles = StyleSheet.create({
 
   decoCircleLarge: {
     position: "absolute",
-    width: 420,
-    height: 420,
+    width: 480,
+    height: 480,
     borderRadius: 999,
     backgroundColor: colors.primaryBlue,
-    top: -180,
-    right: -120,
+    top: -220,
+    right: -150,
     opacity: 0.08,
   },
   decoCircleSmall: {
     position: "absolute",
-    width: 200,
-    height: 200,
+    width: 250,
+    height: 250,
     borderRadius: 999,
     backgroundColor: colors.accentOrange,
-    top: -60,
-    left: -80,
+    top: -90,
+    left: -100,
     opacity: 0.08,
   },
 
@@ -1234,16 +1239,18 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   logoWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: colors.primaryBlue,
+    width: 72,
+    height: 72,
     alignItems: "center",
     justifyContent: "center",
   },
+  logoImage: {
+    width: 72,
+    height: 72,
+  },
   ProPerform: {
     fontFamily: "Inter",
-    fontSize: 22,
+    fontSize: 36,
     fontWeight: "900",
     color: colors.textPrimary,
     letterSpacing: -0.5,
