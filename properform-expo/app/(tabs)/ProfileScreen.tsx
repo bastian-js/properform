@@ -6,7 +6,6 @@ import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import {
   ActivityIndicator,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -62,15 +61,9 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.topSection}>
-          <Image
-            source={
-              user?.profile_image_url
-                ? { uri: user.profile_image_url }
-                : require("../../assets/images/profile_picture.png")
-            }
-            resizeMode="contain"
-            style={styles.profileImage}
-          />
+          <View style={styles.profileIconWrap}>
+            <Icon name="person" size={48} color={colors.primaryBlue} />
+          </View>
 
           <View>
             <Text style={styles.goodMorning}>Guten Morgen,</Text>
@@ -181,10 +174,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
 
-  profileImage: {
+  profileIconWrap: {
     width: 90,
     height: 90,
     borderRadius: 999,
+    backgroundColor: "#EEF2F7",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: spacing.lg,
   },
 

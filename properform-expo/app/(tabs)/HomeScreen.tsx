@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,6 +14,7 @@ import { colors } from "@/src/theme/colors";
 import SecondaryButton from "@/src/components/secondaryButton";
 import api from "@/src/utils/axiosInstance";
 import { useFocusEffect } from "expo-router";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 
 const getTodayString = () => new Date().toISOString().split("T")[0];
 
@@ -172,14 +172,9 @@ export default function HomeScreen() {
       >
         {/* top row (profile, greeting, name) */}
         <View style={styles.topRow}>
-          <Image
-            source={
-              user?.profile_image_url
-                ? { uri: user.profile_image_url }
-                : require("../../assets/images/profile_picture.png")
-            }
-            style={styles.avatarImage}
-          />
+          <View style={styles.avatarIconWrap}>
+            <Icon name="person" size={28} color={colors.primaryBlue} />
+          </View>
 
           <View style={styles.greetingBlock}>
             <Text style={styles.goodMorning}>{greeting}</Text>
@@ -311,10 +306,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
 
-  avatarImage: {
+  avatarIconWrap: {
     width: 48,
     height: 48,
     borderRadius: 999,
+    backgroundColor: "#EEF2F7",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: spacing.md,
   },
 
