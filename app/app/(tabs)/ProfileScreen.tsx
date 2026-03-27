@@ -24,6 +24,14 @@ export default function ProfileScreen() {
     created_at: string;
   } | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [greeting, setGreeting] = React.useState("");
+
+  const calculateGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Guten Morgen,";
+    if (hour < 18) return "Guten Tag,";
+    return "Guten Abend,";
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -40,6 +48,7 @@ export default function ProfileScreen() {
         }
       };
 
+      setGreeting(calculateGreeting());
       void getUser();
     }, []),
   );
@@ -71,7 +80,7 @@ export default function ProfileScreen() {
           </View>
 
           <View>
-            <Text style={styles.goodMorning}>Guten Morgen,</Text>
+            <Text style={styles.goodMorning}>{greeting}</Text>
             <Text style={styles.hello}>{user?.firstname ?? "..."}</Text>
           </View>
         </View>
