@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Modal,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
   ActivityIndicator,
   Alert,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { colors } from "@/src/theme/colors";
-import { typography } from "@/src/theme/typography";
 import { spacing } from "@/src/theme/spacing";
+import { typography } from "@/src/theme/typography";
 import api from "@/src/utils/axiosInstance";
 
 type Exercise = {
@@ -30,10 +32,18 @@ type Props = {
   onPlanCreated: () => void;
 };
 
+type UserTrainingPlan = {
+  id: number;
+  tpid: number;
+  status: string;
+};
+
 const SPORTS = [
   { id: 1, label: "Gym", value: "gym" },
   { id: 2, label: "Basketball", value: "basketball" },
 ];
+
+const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
 export default function CreatePlanModal({
   visible,
@@ -48,6 +58,9 @@ export default function CreatePlanModal({
   const [description, setDescription] = useState("");
   const [sportId, setSportId] = useState(1);
   const [sessionsPerWeek, setSessionsPerWeek] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempStartDate, setTempStartDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date | null>(null);
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [selectedEids, setSelectedEids] = useState<number[]>([]);
@@ -61,6 +74,9 @@ export default function CreatePlanModal({
       setDescription("");
       setSportId(1);
       setSessionsPerWeek("");
+      setShowDatePicker(false);
+      setTempStartDate(new Date());
+      setStartDate(null);
       setSelectedEids([]);
       setCreatedPlanId(null);
     }
@@ -79,11 +95,31 @@ export default function CreatePlanModal({
         params: { limit: 100, filter },
       });
       setExercises(response.data.exercises);
-    } catch (err) {
+    } catch {
       Alert.alert("Fehler", "Übungen konnten nicht geladen werden.");
     } finally {
       setLoadingExercises(false);
     }
+  };
+
+  const onStartDateChange = (_: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      if (selectedDate) {
+        setTempStartDate(selectedDate);
+        setStartDate(selectedDate);
+      }
+      setShowDatePicker(false);
+      return;
+    }
+
+    if (selectedDate) {
+      setTempStartDate(selectedDate);
+    }
+  };
+
+  const confirmIOSStartDate = () => {
+    setStartDate(tempStartDate);
+    setShowDatePicker(false);
   };
 
   const handleNextStep = async () => {
@@ -95,6 +131,10 @@ export default function CreatePlanModal({
       Alert.alert("Fehler", "Bitte fülle alle Felder aus.");
       return;
     }
+    if (!startDate) {
+      Alert.alert("Fehler", "Bitte wähle ein Startdatum aus.");
+      return;
+    }
 
     try {
       setSaving(true);
@@ -102,8 +142,8 @@ export default function CreatePlanModal({
         name: name.trim(),
         description: description.trim(),
         sportId,
-        difficultyLevelId: 1, // auch fix, wird vom User nicht eingegeben
-        durationWeeks: 1, // fix, wird nicht vom User eingegeben
+        difficultyLevelId: 1,
+        durationWeeks: 1,
         sessionsPerWeek: parseInt(sessionsPerWeek),
       });
       setCreatedPlanId(response.data.planId);
@@ -126,6 +166,10 @@ export default function CreatePlanModal({
 
   const handleSavePlan = async () => {
     if (!createdPlanId) return;
+    if (!startDate) {
+      Alert.alert("Fehler", "Bitte wähle ein Startdatum aus.");
+      return;
+    }
     if (selectedEids.length === 0) {
       Alert.alert("Fehler", "Bitte wähle mindestens eine Übung aus.");
       return;
@@ -133,6 +177,7 @@ export default function CreatePlanModal({
 
     try {
       setSaving(true);
+      console.log("1: starte exercise save");
       await Promise.all(
         selectedEids.map((eid, index) =>
           api.post(`/training-plans/${createdPlanId}/exercises`, {
@@ -143,13 +188,38 @@ export default function CreatePlanModal({
           }),
         ),
       );
+      console.log("2: exercises gespeichert");
+
+      const assignResponse = await api.post("/users/training-plans", {
+        tpid: createdPlanId,
+        startDate: formatDate(startDate),
+      });
+
+      console.log("3: assign fertig", assignResponse.data);
+      console.log("Assign Response", assignResponse.data);
+
+      const userPlansResponse = await api.get("/users/training-plans");
+
+      const assignedPlan = userPlansResponse.data.plans?.find(
+        (plan: UserTrainingPlan) => plan.tpid === createdPlanId,
+      );
+
+      const userTrainingPlanId = assignedPlan?.id;
+
+      if (!userTrainingPlanId) {
+        console.log("User training plans response", userPlansResponse.data);
+        return;
+      }
+
+      console.log("User training plan id", userTrainingPlanId);
+
       onPlanCreated();
       onClose();
     } catch (err: any) {
       Alert.alert(
         "Fehler",
         err.response?.data?.message ||
-          "Übungen konnten nicht gespeichert werden.",
+          "Plan konnte nicht vollständig gespeichert werden.",
       );
     } finally {
       setSaving(false);
@@ -160,7 +230,7 @@ export default function CreatePlanModal({
     <Modal
       visible={visible}
       animationType="slide"
-      transparent={true}
+      transparent
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
@@ -230,6 +300,44 @@ export default function CreatePlanModal({
                 onChangeText={setSessionsPerWeek}
                 keyboardType="numeric"
               />
+
+              <Text style={styles.label}>Startdatum *</Text>
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={{
+                    color: startDate
+                      ? colors.textPrimary
+                      : colors.textSecondary,
+                  }}
+                >
+                  {startDate ? formatDate(startDate) : "YYYY-MM-DD"}
+                </Text>
+              </TouchableOpacity>
+
+              {showDatePicker && (
+                <View style={styles.datePickerContainer}>
+                  <DateTimePicker
+                    value={tempStartDate}
+                    mode="date"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={onStartDateChange}
+                    locale="de-DE"
+                    themeVariant="light"
+                  />
+                  {Platform.OS === "ios" && (
+                    <TouchableOpacity
+                      style={styles.datePickerConfirmButton}
+                      onPress={confirmIOSStartDate}
+                    >
+                      <Text style={styles.datePickerConfirmText}>Fertig</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
 
               <TouchableOpacity
                 style={[styles.button, saving && styles.buttonDisabled]}
@@ -367,7 +475,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     height: "80%",
   },
-
   handle: {
     width: 40,
     height: 4,
@@ -414,6 +521,26 @@ const styles = StyleSheet.create({
   textArea: {
     height: 90,
     textAlignVertical: "top",
+  },
+  datePickerContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    padding: spacing.sm,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  datePickerConfirmButton: {
+    alignSelf: "flex-end",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  datePickerConfirmText: {
+    ...typography.body,
+    color: colors.primaryBlue,
+    fontWeight: "600",
   },
   chipRow: {
     flexDirection: "row",
