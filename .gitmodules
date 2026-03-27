@@ -1,3 +1,0 @@
-[submodule "server-backend"]
-	path = server-backend
-	url = git@github.com:b-bastian/properform-backend.git
