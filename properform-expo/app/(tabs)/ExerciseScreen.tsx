@@ -71,8 +71,18 @@ export default function ExerciseScreen() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  const firstPageInFlightRef = React.useRef(false);
+
   const fetchExercises = useCallback(
-    async (category: string, pageNum: number) => {
+    async (category: string, pageNum: number, force = false) => {
+      const isFirstPage = pageNum === 1;
+
+      if (isFirstPage && !force && firstPageInFlightRef.current) return;
+
+      if (isFirstPage) {
+        firstPageInFlightRef.current = true;
+      }
+
       try {
         setLoading(true);
         setError(null);
@@ -85,15 +95,22 @@ export default function ExerciseScreen() {
           },
         });
 
-        if (pageNum === 1) {
+        if (isFirstPage) {
           setExercises(response.data.exercises);
         } else {
           setExercises((prev) => [...prev, ...response.data.exercises]);
         }
         setTotalPages(response.data.totalPages);
       } catch (err: any) {
-        setError(err.response?.data?.error || "Fehler beim Laden der Übungen.");
+        if (err.response?.status === 429) {
+          setError("Zu viele Anfragen, bitte kurz warten.");
+        } else {
+          setError(err.response?.data?.error || "Fehler beim Laden der Uebungen.");
+        }
       } finally {
+        if (isFirstPage) {
+          firstPageInFlightRef.current = false;
+        }
         setLoading(false);
       }
     },
@@ -179,7 +196,7 @@ export default function ExerciseScreen() {
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={() => fetchExercises(activeCategory, 1)}>
+          <TouchableOpacity onPress={() => fetchExercises(activeCategory, 1, true)}>
             <Text style={styles.retryText}>Erneut versuchen</Text>
           </TouchableOpacity>
         </View>
@@ -226,13 +243,6 @@ export default function ExerciseScreen() {
 
                 <View style={styles.exerciseInfo}>
                   <Text style={styles.exerciseName}>{exercise.name}</Text>
-                  {/* muscle group api not working
-                  <Text style={styles.exerciseMuscle}>
-                    {(exercise.muscle_groups ?? []).find(
-                      (mg) => mg.is_primary === 1,
-                    )?.name ?? ""}
-                  </Text>
-                  */}
                 </View>
 
                 <Icon
@@ -365,12 +375,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.textPrimary,
     fontSize: 15,
-  },
-  exerciseMuscle: {
-    ...typography.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 2,
   },
   loader: {
     marginTop: spacing.xl,

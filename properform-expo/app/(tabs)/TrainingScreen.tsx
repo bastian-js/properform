@@ -52,6 +52,9 @@ export default function TrainingScreen() {
   const [editPlan, setEditPlan] = useState<TrainingPlan | null>(null);
   const [hasTrainer, setHasTrainer] = useState(false);
 
+  const plansInFlightRef = React.useRef(false);
+  const trainerInFlightRef = React.useRef(false);
+
   const tabs = hasTrainer ? ["Eigene Pläne", "Trainer"] : ["Eigene Pläne"];
 
   const startWorkout = (plan: TrainingPlan) => {
@@ -59,25 +62,41 @@ export default function TrainingScreen() {
     setWorkoutVisible(true);
   };
 
-  const fetchPlans = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchPlans = useCallback(
+    async (force = false) => {
+      if (!force && plansInFlightRef.current) return;
 
-      const response = await api.get("/training-plans");
-      setPlans(response.data.plans);
-    } catch (err: any) {
-      if (err.response?.status === 404) {
-        setPlans([]);
-      } else {
-        setError("Fehler beim Laden der Trainingspläne.");
+      plansInFlightRef.current = true;
+
+      try {
+        if (plans.length === 0) {
+          setLoading(true);
+        }
+        setError(null);
+
+        const response = await api.get("/training-plans");
+        setPlans(response.data.plans);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          setPlans([]);
+        } else if (err.response?.status === 429) {
+          setError("Zu viele Anfragen, bitte kurz warten.");
+        } else {
+          setError("Fehler beim Laden der Trainingsplaene.");
+        }
+      } finally {
+        plansInFlightRef.current = false;
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [plans.length],
+  );
 
-  const fetchTrainer = useCallback(async () => {
+  const fetchTrainer = useCallback(async (force = false) => {
+    if (!force && trainerInFlightRef.current) return;
+
+    trainerInFlightRef.current = true;
+
     try {
       await api.get("/users/me/trainer");
       setHasTrainer(true);
@@ -85,6 +104,8 @@ export default function TrainingScreen() {
       if (err.response?.status === 404) {
         setHasTrainer(false);
       }
+    } finally {
+      trainerInFlightRef.current = false;
     }
   }, []);
 
@@ -100,7 +121,7 @@ export default function TrainingScreen() {
           onPress: async () => {
             try {
               await api.delete(`/training-plans/${tpid}`);
-              fetchPlans(); // Liste aktualisieren
+              fetchPlans(true);
             } catch {
               Alert.alert("Fehler", "Plan konnte nicht gelöscht werden.");
             }
@@ -186,7 +207,7 @@ export default function TrainingScreen() {
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
-              <TouchableOpacity onPress={fetchPlans}>
+              <TouchableOpacity onPress={() => fetchPlans(true)}>
                 <Text style={styles.retryText}>Erneut versuchen</Text>
               </TouchableOpacity>
             </View>
@@ -268,14 +289,14 @@ export default function TrainingScreen() {
       <CreatePlanModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        onPlanCreated={fetchPlans}
+        onPlanCreated={() => fetchPlans(true)}
       />
 
       <EditPlanModal
         visible={editVisible}
         plan={editPlan}
         onClose={() => setEditVisible(false)}
-        onPlanUpdated={fetchPlans}
+        onPlanUpdated={() => fetchPlans(true)}
       />
 
       <WorkoutModal
