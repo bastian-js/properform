@@ -2,7 +2,6 @@ import express from "express";
 import { db } from "../../../db.js";
 
 import { requireRole } from "../../../middleware/role.js";
-import { createRateLimiter } from "../../../middleware/rate.js";
 
 import { requireAuth } from "../../../middleware/auth.js";
 
@@ -12,7 +11,6 @@ router.get(
   "/exercises/muscle-groups",
   requireAuth,
   requireRole("owner"),
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 30 }),
   async (req, res) => {
     try {
       const [rows] = await db.query(

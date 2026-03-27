@@ -17,7 +17,6 @@ router.post(
   "/trainers/register",
   requireAuth,
   requireRole("owner"),
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }),
   async (req, res) => {
     const { firstname, lastname, password, birthdate, email, phone_number } =
       req.body;
@@ -77,58 +76,62 @@ router.post(
   },
 );
 
-router.post("/trainers/login", async (req, res) => {
-  let { email, password } = req.body;
+router.post(
+  "/trainers/login",
+  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }),
+  async (req, res) => {
+    let { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({
-      error: "please fill all required fields.",
-    });
-  }
-
-  email = email.trim().toLowerCase();
-
-  try {
-    const [rows] = await db.query("SELECT * FROM trainers WHERE email = ?", [
-      email,
-    ]);
-
-    if (!rows.length) {
-      return res.status(401).json({
-        error: "invalid credentials.",
+    if (!email || !password) {
+      return res.status(400).json({
+        error: "please fill all required fields.",
       });
     }
 
-    const trainer = rows[0];
+    email = email.trim().toLowerCase();
 
-    const valid = await bcrypt.compare(password, trainer.password_hash);
+    try {
+      const [rows] = await db.query("SELECT * FROM trainers WHERE email = ?", [
+        email,
+      ]);
 
-    if (!valid) {
-      return res.status(401).json({
-        error: "invalid credentials.",
+      if (!rows.length) {
+        return res.status(401).json({
+          error: "invalid credentials.",
+        });
+      }
+
+      const trainer = rows[0];
+
+      const valid = await bcrypt.compare(password, trainer.password_hash);
+
+      if (!valid) {
+        return res.status(401).json({
+          error: "invalid credentials.",
+        });
+      }
+
+      const token = jwt.sign(
+        { tid: trainer.tid, role: "trainer" },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "3d",
+        },
+      );
+
+      return res.status(200).json({
+        message: "login successful.",
+        token,
+        tid: trainer.tid,
+        role: "trainer",
+      });
+    } catch (error) {
+      console.error("trainer login error.", error);
+      return res.status(500).json({
+        error: "internal server error.",
       });
     }
-
-    const token = jwt.sign(
-      { tid: trainer.tid, role: "trainer" },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "3d",
-      },
-    );
-
-    return res.status(200).json({
-      message: "login successful.",
-      token,
-      tid: trainer.tid,
-      role: "trainer",
-    });
-  } catch (error) {
-    console.error("trainer login error.", error);
-    return res.status(500).json({
-      error: "internal server error.",
-    });
-  }
-});
+  },
+);
 
 export default router;

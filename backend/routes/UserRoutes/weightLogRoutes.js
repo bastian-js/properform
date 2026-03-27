@@ -2,7 +2,6 @@ import express from "express";
 import { db } from "../../db.js";
 
 import { requireRole } from "../../middleware/role.js";
-import { createRateLimiter } from "../../middleware/rate.js";
 
 import { requireAuth } from "../../middleware/auth.js";
 
@@ -12,7 +11,6 @@ router.post(
   "/weight",
   requireAuth,
   requireRole("user", "owner"),
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 20 }),
   async (req, res) => {
     try {
       const uid = req.user.uid;

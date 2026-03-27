@@ -13,7 +13,6 @@ const saltRounds = 10;
 
 router.post(
   "/admin/register",
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 5 }),
   requireAuth,
   requireRole("owner"),
   async (req, res) => {

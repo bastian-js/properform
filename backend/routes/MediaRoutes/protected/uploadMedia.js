@@ -5,7 +5,6 @@ import { upload } from "../../../helpers/multerMedia.js";
 import { db } from "../../../db.js";
 
 import { requireRole } from "../../../middleware/role.js";
-import { createRateLimiter } from "../../../middleware/rate.js";
 
 import { requireAuth } from "../../../middleware/auth.js";
 
@@ -15,7 +14,6 @@ router.post(
   "/",
   requireAuth,
   requireRole("owner"),
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 30 }),
   upload.single("file"),
   async (req, res) => {
     try {

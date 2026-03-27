@@ -1,22 +1,17 @@
 import express from "express";
 import { db } from "../../../db.js";
 import { requireAuth } from "../../../middleware/auth.js";
-import { createRateLimiter } from "../../../middleware/rate.js";
 
 const router = express.Router();
 
-router.get(
-  "/me",
-  requireAuth,
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }),
-  async (req, res) => {
-    try {
-      const userId = req.user.uid;
+router.get("/me", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.uid;
 
-      console.log("jwt user.", req.user);
+    console.log("jwt user.", req.user);
 
-      const [rows] = await db.execute(
-        `SELECT
+    const [rows] = await db.execute(
+      `SELECT
      uid,
      firstname,
      birthdate,
@@ -37,21 +32,20 @@ router.get(
    FROM users
    WHERE uid = ?
    LIMIT 1`,
-        [userId],
-      );
+      [userId],
+    );
 
-      if (rows.length === 0) {
-        return res.status(404).json({ error: "user not found." });
-      }
-
-      return res.status(200).json(rows[0]);
-    } catch (err) {
-      return res
-        .status(500)
-        .json({ message: "server error.", error: err.message });
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "user not found." });
     }
-  },
-);
+
+    return res.status(200).json(rows[0]);
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "server error.", error: err.message });
+  }
+});
 
 router.get("/me/trainer", requireAuth, async (req, res) => {
   const userId = req.user.uid;

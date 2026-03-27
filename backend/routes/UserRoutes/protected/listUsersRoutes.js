@@ -1,7 +1,6 @@
 import express from "express";
 import { db } from "../../../db.js";
 import { requireAuth } from "../../../middleware/auth.js";
-import { createRateLimiter } from "../../../middleware/rate.js";
 
 const router = express.Router();
 
@@ -91,22 +90,12 @@ const getUsers = async (req, res, role) => {
   }
 };
 
-router.get(
-  "/",
-  requireAuth,
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }),
-  async (req, res) => {
-    await getUsers(req, res, null);
-  },
-);
+router.get("/", requireAuth, async (req, res) => {
+  await getUsers(req, res, null);
+});
 
-router.get(
-  "/:role",
-  requireAuth,
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }),
-  async (req, res) => {
-    await getUsers(req, res, req.params.role);
-  },
-);
+router.get("/:role", requireAuth, async (req, res) => {
+  await getUsers(req, res, req.params.role);
+});
 
 export default router;
