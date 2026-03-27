@@ -17,6 +17,7 @@ import UserTrainingPlans from "./TrainingPlansRoutes/protected/UserTrainingPlans
 import TrainingPlans from "./TrainingPlansRoutes/protected/TrainingPlans/index.js";
 
 const routeMounts = [
+  { router: UserTrainingPlans, path: "/users/training-plans", protected: true },
   { router: publicUserRoutes, path: "/users", protected: false },
   { router: publicTrainerRoutes, path: "/trainers", protected: false },
   { router: authRoutes, path: "/auth", protected: false },
@@ -32,7 +33,6 @@ const routeMounts = [
   { router: notificationRoutes, path: "/admin", protected: true },
   { router: notificationsMe, path: "/notifications", protected: true },
   { router: TrainingPlans, path: "/training-plans", protected: true },
-  { router: UserTrainingPlans, path: "/users/training-plans", protected: true },
 ];
 
 const mountRoutes = (app) => {
