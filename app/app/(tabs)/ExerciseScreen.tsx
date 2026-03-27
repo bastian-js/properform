@@ -16,6 +16,7 @@ import { typography } from "@/src/theme/typography";
 import { spacing } from "@/src/theme/spacing";
 import ExerciseDetailModal from "@/src/components/modals/ExerciseDetailModal";
 import api from "@/src/utils/axiosInstance";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 type MuscleGroup = {
   mgid: number;
@@ -57,6 +58,7 @@ const categories = ["Gym", "Basketball"];
 const LIMIT = 10;
 
 export default function ExerciseScreen() {
+  const tabBarHeight = useBottomTabBarHeight();
   const [activeCategory, setActiveCategory] = useState("Gym");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchVisible, setSearchVisible] = useState(false);
@@ -187,7 +189,10 @@ export default function ExerciseScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[
+          styles.list,
+          { paddingBottom: tabBarHeight + spacing.xl },
+        ]}
       >
         {loading && page === 1 ? (
           <ActivityIndicator
@@ -333,7 +338,6 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: spacing.sm,
-    paddingBottom: spacing.xl,
   },
   exerciseCard: {
     flexDirection: "row",

@@ -27,6 +27,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -63,6 +64,8 @@ function formatDate(date: Date) {
 export default function OnboardingScreen() {
   const router = useRouter();
   const { finishOnboarding } = React.useContext(OnboardingContext);
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
 
   const defaultBirthDate = React.useMemo(() => {
     const d = new Date();
@@ -498,27 +501,34 @@ export default function OnboardingScreen() {
           <View style={styles.decoCircleSmall} />
 
           <View style={styles.topSection}>
-            <View style={styles.logoWrap}>
+            <View style={[styles.logoWrap, isCompact ? styles.logoWrapCompact : null]}>
               <Image
                 source={require("../../assets/images/logo_ohne_bg.png")}
-                style={styles.logoImage}
+                style={[styles.logoImage, isCompact ? styles.logoImageCompact : null]}
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.ProPerform}>ProPerform</Text>
+            <Text style={[styles.ProPerform, isCompact ? styles.brandCompact : null]}>
+              ProPerform
+            </Text>
           </View>
 
           <View style={styles.mainSection}>
-            <Text style={styles.mainTitle}>
+            <Text style={[styles.mainTitle, isCompact ? styles.mainTitleCompact : null]}>
               Trainiere{"\n"}smarter.{"\n"}Nicht harder.
             </Text>
-            <Text style={styles.mainSubtitle}>
+            <Text
+              style={[styles.mainSubtitle, isCompact ? styles.mainSubtitleCompact : null]}
+            >
               Erstelle dein Profil und werde die beste Version von dir.
             </Text>
           </View>
 
-          <View style={styles.bottomSection}>
-            <TouchableOpacity style={styles.primaryButton} onPress={handleNext}>
+          <View style={[styles.bottomSection, isCompact ? styles.bottomSectionCompact : null]}>
+            <TouchableOpacity
+              style={[styles.primaryButton, isCompact ? styles.primaryButtonCompact : null]}
+              onPress={handleNext}
+            >
               <Text style={styles.primaryButtonText}>LOS GEHT&apos;S</Text>
               <Animated.View
                 style={{
@@ -553,14 +563,17 @@ export default function OnboardingScreen() {
             behavior={Platform.OS === "ios" ? "padding" : undefined}
           >
             <ScrollView
-              contentContainerStyle={styles.scrollContent}
+              contentContainerStyle={[
+                styles.scrollContent,
+                isCompact ? styles.scrollContentCompact : null,
+              ]}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode={
                 Platform.OS === "ios" ? "interactive" : "none"
               }
               showsVerticalScrollIndicator={false}
             >
-              <View style={styles.header}>
+              <View style={[styles.header, isCompact ? styles.headerCompact : null]}>
                 <Text style={typography.title}>
                   {step === 5
                     ? STEP_5_TITLE
@@ -587,7 +600,7 @@ export default function OnboardingScreen() {
                   opacity: contentOpacity,
                 }}
               >
-                <View style={styles.card}>
+                <View style={[styles.card, isCompact ? styles.cardCompact : null]}>
                   {step === 2 ? (
                     <>
                       <Text style={styles.label}>Vorname</Text>
@@ -1174,7 +1187,9 @@ export default function OnboardingScreen() {
                 </View>
               </Animated.View>
 
-              <View style={styles.navigation}>
+              <View
+                style={[styles.navigation, isCompact ? styles.navigationCompact : null]}
+              >
                 <TouchableOpacity
                   style={styles.arrowButton}
                   onPress={handleBack}
@@ -1248,12 +1263,23 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
   },
+  logoWrapCompact: {
+    width: 60,
+    height: 60,
+  },
+  logoImageCompact: {
+    width: 60,
+    height: 60,
+  },
   ProPerform: {
     fontFamily: "Inter",
     fontSize: 36,
     fontWeight: "900",
     color: colors.textPrimary,
     letterSpacing: -0.5,
+  },
+  brandCompact: {
+    fontSize: 30,
   },
 
   mainSection: {
@@ -1270,6 +1296,11 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
     marginBottom: spacing.lg,
   },
+  mainTitleCompact: {
+    fontSize: 38,
+    lineHeight: 44,
+    marginBottom: spacing.md,
+  },
   mainSubtitle: {
     fontFamily: "Inter",
     fontSize: 16,
@@ -1278,17 +1309,32 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     maxWidth: "85%",
   },
+  mainSubtitleCompact: {
+    fontSize: 15,
+    lineHeight: 22,
+    maxWidth: "100%",
+  },
 
   bottomSection: {
     paddingBottom: spacing.xl,
     gap: spacing.md,
   },
+  bottomSectionCompact: {
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingTop: spacing.md,
   },
+  scrollContentCompact: {
+    paddingTop: spacing.sm,
+  },
   header: {
     marginBottom: spacing.lg,
+  },
+  headerCompact: {
+    marginBottom: spacing.md,
   },
   subheader: {
     fontSize: 18,
@@ -1305,6 +1351,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 3,
+  },
+  cardCompact: {
+    padding: spacing.md,
   },
   label: {
     ...typography.label,
@@ -1409,6 +1458,9 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.xl + 20,
   },
+  navigationCompact: {
+    paddingBottom: spacing.xl,
+  },
   arrowButton: {
     width: 56,
     height: 56,
@@ -1431,6 +1483,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
+  },
+  primaryButtonCompact: {
+    paddingVertical: 16,
   },
   primaryButtonText: {
     fontFamily: "Inter",

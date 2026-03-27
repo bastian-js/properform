@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -279,7 +281,10 @@ export default function WorkoutModal({
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} onPress={handleClose} />
 
-        <View style={styles.sheet}>
+        <KeyboardAvoidingView
+          style={styles.sheet}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <View style={styles.handle} />
 
           <SafeAreaView style={styles.container} edges={["bottom"]}>
@@ -338,6 +343,7 @@ export default function WorkoutModal({
                 <ScrollView
                   contentContainerStyle={styles.scrollContent}
                   showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
                 >
                   {workoutData.map((exercise, exerciseIndex) => (
                     <View key={exercise.id} style={styles.exerciseCard}>
@@ -428,7 +434,7 @@ export default function WorkoutModal({
               </>
             )}
           </SafeAreaView>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

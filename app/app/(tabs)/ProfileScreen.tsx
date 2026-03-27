@@ -1,6 +1,7 @@
 import { colors } from "@/src/theme/colors";
 import { spacing } from "@/src/theme/spacing";
 import api from "@/src/utils/axiosInstance";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React from "react";
@@ -10,12 +11,16 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const tabBarHeight = useBottomTabBarHeight();
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
 
   const [user, setUser] = React.useState<{
     firstname: string;
@@ -69,23 +74,28 @@ export default function ProfileScreen() {
         contentContainerStyle={{
           flexGrow: 1,
           paddingHorizontal: 20,
-          paddingTop: 30,
+          paddingTop: isCompact ? 20 : 30,
+          paddingBottom: tabBarHeight + spacing.xl,
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.topSection}>
-          <View style={styles.profileIconWrap}>
+        <View style={[styles.topSection, isCompact ? styles.topSectionCompact : null]}>
+          <View
+            style={[styles.profileIconWrap, isCompact ? styles.profileIconWrapCompact : null]}
+          >
             <Icon name="person" size={48} color={colors.primaryBlue} />
           </View>
 
           <View>
             <Text style={styles.goodMorning}>{greeting}</Text>
-            <Text style={styles.hello}>{user?.firstname ?? "..."}</Text>
+            <Text style={[styles.hello, isCompact ? styles.helloCompact : null]}>
+              {user?.firstname ?? "..."}
+            </Text>
           </View>
         </View>
 
-        <View style={styles.infoSection}>
+        <View style={[styles.infoSection, isCompact ? styles.infoSectionCompact : null]}>
           <Text style={styles.sectionTitle}>PERSÖNLICHE INFORMATIONEN</Text>
 
           <View style={styles.row}>
@@ -117,7 +127,10 @@ export default function ProfileScreen() {
         </View>
 
         <TouchableOpacity
-          style={styles.settingsButton}
+          style={[
+            styles.settingsButton,
+            isCompact ? styles.settingsButtonCompact : null,
+          ]}
           onPress={() => router.push("/(settings)/SettingsScreen")}
           activeOpacity={0.7}
         >
@@ -149,6 +162,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: spacing.xl,
   },
+  topSectionCompact: {
+    marginBottom: spacing.lg,
+  },
   profileIconWrap: {
     width: 90,
     height: 90,
@@ -157,6 +173,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.lg,
+  },
+  profileIconWrapCompact: {
+    width: 72,
+    height: 72,
+    marginRight: spacing.md,
   },
 
   goodMorning: {
@@ -172,6 +193,9 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontFamily: "Inter",
   },
+  helloCompact: {
+    fontSize: 24,
+  },
   infoSection: {
     backgroundColor: colors.white,
     borderRadius: 20,
@@ -181,6 +205,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 12,
     elevation: 3,
+  },
+  infoSectionCompact: {
+    padding: spacing.md,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: 14,
@@ -228,6 +256,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderColor: colors.primaryBlue,
     borderWidth: 1.5,
+  },
+  settingsButtonCompact: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   settingsButtonText: {
     flex: 1,

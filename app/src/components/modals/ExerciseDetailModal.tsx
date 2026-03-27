@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  useWindowDimensions,
 } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { colors } from "@/src/theme/colors";
@@ -58,6 +59,8 @@ export default function ExerciseDetailModal({
   exercise,
   onClose,
 }: Props) {
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
   const player = useVideoPlayer(exercise?.video_url ?? null, (p) => {
     p.loop = true;
     p.muted = true;
@@ -83,7 +86,7 @@ export default function ExerciseDetailModal({
     >
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} onPress={onClose} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, isCompact ? styles.sheetCompact : null]}>
           {/* handle + close button */}
           <View style={styles.handle} />
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -92,17 +95,25 @@ export default function ExerciseDetailModal({
 
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.content}
+            contentContainerStyle={[
+              styles.content,
+              isCompact ? styles.contentCompact : null,
+            ]}
           >
             <View style={styles.imageContainer}>
               {exercise.thumbnail_url ? (
                 <Image
                   source={{ uri: exercise.thumbnail_url }}
-                  style={styles.image}
+                  style={[styles.image, isCompact ? styles.imageCompact : null]}
                   resizeMode="cover"
                 />
               ) : (
-                <View style={styles.imagePlaceholder}>
+                <View
+                  style={[
+                    styles.imagePlaceholder,
+                    isCompact ? styles.imageCompact : null,
+                  ]}
+                >
                   <Icon
                     name="fitness-center"
                     size={48}
@@ -115,7 +126,9 @@ export default function ExerciseDetailModal({
             {/* name + category + muscle group */}
             <View style={styles.infoSection}>
               <Text style={styles.category}>{getSportName(exercise.sid)}</Text>
-              <Text style={styles.name}>{exercise.name}</Text>
+              <Text style={[styles.name, isCompact ? styles.nameCompact : null]}>
+                {exercise.name}
+              </Text>
               {/* muscle group api not working
               <View style={styles.badge}>
                 <Icon
@@ -172,7 +185,7 @@ export default function ExerciseDetailModal({
                 <Text style={styles.cardTitle}>Videoanleitung</Text>
                 <VideoView
                   player={player}
-                  style={styles.video}
+                  style={[styles.video, isCompact ? styles.videoCompact : null]}
                   allowsFullscreen
                   allowsPictureInPicture
                   startsPictureInPictureAutomatically
@@ -203,6 +216,11 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     maxHeight: "85%",
   },
+  sheetCompact: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
+    maxHeight: "90%",
+  },
   handle: {
     width: 40,
     height: 4,
@@ -220,6 +238,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
     gap: spacing.md,
   },
+  contentCompact: {
+    gap: spacing.sm,
+  },
   imageContainer: {
     borderRadius: 16,
     overflow: "hidden",
@@ -228,6 +249,10 @@ const styles = StyleSheet.create({
   image: {
     width: 260,
     height: 160,
+  },
+  imageCompact: {
+    width: 220,
+    height: 140,
   },
   imagePlaceholder: {
     width: 260,
@@ -250,6 +275,10 @@ const styles = StyleSheet.create({
   },
   name: {
     ...typography.title,
+  },
+  nameCompact: {
+    fontSize: 26,
+    lineHeight: 32,
   },
   badge: {
     flexDirection: "row",
@@ -298,5 +327,8 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 200,
     borderRadius: 12,
+  },
+  videoCompact: {
+    height: 170,
   },
 });

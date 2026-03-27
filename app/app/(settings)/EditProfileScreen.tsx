@@ -17,6 +17,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -72,6 +73,8 @@ const INITIAL_ERRORS: FormErrors = {
 
 export default function EditProfileScreen() {
   const router = useRouter();
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
 
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -288,11 +291,14 @@ export default function EditProfileScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[
+            styles.content,
+            isCompact ? styles.contentCompact : null,
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.section}>
+          <View style={[styles.section, isCompact ? styles.sectionCompact : null]}>
             <Text style={styles.sectionTitle}>BASISDATEN</Text>
 
             <Text style={styles.label}>Gewicht</Text>
@@ -370,7 +376,7 @@ export default function EditProfileScreen() {
             ) : null}
           </View>
 
-          <View style={styles.section}>
+          <View style={[styles.section, isCompact ? styles.sectionCompact : null]}>
             <Text style={styles.sectionTitle}>TRAININGSFOKUS</Text>
 
             <Text style={styles.label}>Fitness-Level</Text>
@@ -474,7 +480,11 @@ export default function EditProfileScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.saveButton, saving ? styles.saveButtonDisabled : null]}
+            style={[
+              styles.saveButton,
+              isCompact ? styles.saveButtonCompact : null,
+              saving ? styles.saveButtonDisabled : null,
+            ]}
             onPress={handleSave}
             activeOpacity={0.85}
             disabled={saving}
@@ -533,6 +543,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     paddingBottom: spacing.xl * 2,
   },
+  contentCompact: {
+    paddingVertical: spacing.md,
+    paddingBottom: spacing.xl + spacing.lg,
+  },
   section: {
     marginBottom: spacing.xl,
     backgroundColor: colors.white,
@@ -545,6 +559,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.lg,
+  },
+  sectionCompact: {
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
   },
   sectionTitle: {
     fontSize: 12,
@@ -642,6 +662,9 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
+  },
+  saveButtonCompact: {
+    minHeight: 54,
   },
   saveButtonDisabled: {
     opacity: 0.7,

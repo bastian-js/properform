@@ -3,7 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   TouchableOpacity,
   Alert,
 } from "react-native";
@@ -54,7 +56,10 @@ export default function ForgotPasswordModal({ visible, onClose }: Props) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <Text style={styles.title}>Passwort zurücksetzen</Text>
 
           <Text style={styles.description}>
@@ -79,7 +84,7 @@ export default function ForgotPasswordModal({ visible, onClose }: Props) {
           <TouchableOpacity onPress={onClose} style={styles.closeWrap}>
             <Text style={styles.closeText}>Abbrechen</Text>
           </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

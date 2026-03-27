@@ -18,12 +18,15 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OnboardingTrainerCodeScreen() {
   const router = useRouter();
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
 
   const [code, setCode] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -91,19 +94,22 @@ export default function OnboardingTrainerCodeScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isCompact ? styles.scrollContentCompact : null,
+          ]}
           keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
           keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "none"}
         >
-          <View style={styles.header}>
+          <View style={[styles.header, isCompact ? styles.headerCompact : null]}>
             <Text style={typography.title}>Trainer verbinden</Text>
             <Text style={[typography.body, styles.subheader]}>
               Gib den Code deines Trainers ein
             </Text>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, isCompact ? styles.cardCompact : null]}>
             <Text style={styles.label}>Trainer-Code</Text>
 
             <View
@@ -177,7 +183,9 @@ export default function OnboardingTrainerCodeScreen() {
             Du bekommst den Code von deinem Trainer.
           </Text>
 
-          <View style={styles.navigation}>
+          <View
+            style={[styles.navigation, isCompact ? styles.navigationCompact : null]}
+          >
             <TouchableOpacity style={styles.arrowButton} onPress={handleBack}>
               <Icon name="arrow-back" size={24} color={colors.white} />
             </TouchableOpacity>
@@ -215,8 +223,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingTop: spacing.md,
   },
+  scrollContentCompact: {
+    paddingTop: spacing.sm,
+  },
   header: {
     marginBottom: spacing.lg,
+  },
+  headerCompact: {
+    marginBottom: spacing.md,
   },
   subheader: {
     fontSize: 18,
@@ -232,6 +246,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
+  },
+  cardCompact: {
+    padding: spacing.sm,
   },
   label: {
     ...typography.label,
@@ -340,6 +357,9 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     paddingTop: spacing.md,
     paddingBottom: spacing.xl + 20,
+  },
+  navigationCompact: {
+    paddingBottom: spacing.xl,
   },
   arrowButton: {
     width: 56,

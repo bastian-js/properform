@@ -19,6 +19,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -26,6 +27,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function VerifyEmailScreen() {
   const router = useRouter();
   const { finishOnboarding } = useContext(OnboardingContext);
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
 
   const [email, setEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
@@ -107,18 +110,21 @@ export default function VerifyEmailScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isCompact ? styles.scrollContentCompact : null,
+          ]}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "none"}
         >
-          <View style={styles.header}>
+          <View style={[styles.header, isCompact ? styles.headerCompact : null]}>
             <Text style={typography.title}>E-Mail bestätigen</Text>
             <Text style={[typography.body, styles.subheader]}>
               Gib den 6-stelligen Code ein
             </Text>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, isCompact ? styles.cardCompact : null]}>
             <Text style={styles.label}>Verifikationscode</Text>
 
             <TextInput
@@ -155,7 +161,9 @@ export default function VerifyEmailScreen() {
             )}
           </TouchableOpacity>
 
-          <View style={styles.navigation}>
+          <View
+            style={[styles.navigation, isCompact ? styles.navigationCompact : null]}
+          >
             <TouchableOpacity style={styles.arrowButton} onPress={handleBack}>
               <Icon name="arrow-back" size={24} color={colors.white} />
             </TouchableOpacity>
@@ -193,8 +201,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingTop: spacing.md,
   },
+  scrollContentCompact: {
+    paddingTop: spacing.sm,
+  },
   header: {
     marginBottom: spacing.lg,
+  },
+  headerCompact: {
+    marginBottom: spacing.md,
   },
   subheader: {
     fontSize: 18,
@@ -209,6 +223,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
+  },
+  cardCompact: {
+    padding: spacing.sm,
   },
   label: {
     ...typography.label,
@@ -237,6 +254,9 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     paddingTop: spacing.md,
     paddingBottom: spacing.xl + 20,
+  },
+  navigationCompact: {
+    paddingBottom: spacing.xl,
   },
   arrowButton: {
     width: 56,

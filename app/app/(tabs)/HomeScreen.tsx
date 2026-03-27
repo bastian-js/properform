@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,6 +16,7 @@ import { colors } from "@/src/theme/colors";
 import SecondaryButton from "@/src/components/secondaryButton";
 import WorkoutModal from "@/src/components/modals/WorkoutModal";
 import api from "@/src/utils/axiosInstance";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useFocusEffect } from "expo-router";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 
@@ -60,6 +62,9 @@ type SelectedTrainingPlan = {
 };
 
 export default function HomeScreen() {
+  const tabBarHeight = useBottomTabBarHeight();
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
   const [user, setUser] = useState<{
     firstname: string;
     profile_image_url: string | null;
@@ -197,22 +202,35 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isCompact ? styles.scrollContentCompact : null,
+          { paddingBottom: tabBarHeight + spacing.xl },
+        ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.topRow}>
-          <View style={styles.avatarIconWrap}>
+        <View style={[styles.topRow, isCompact ? styles.topRowCompact : null]}>
+          <View
+            style={[
+              styles.avatarIconWrap,
+              isCompact ? styles.avatarIconWrapCompact : null,
+            ]}
+          >
             <Icon name="person" size={28} color={colors.primaryBlue} />
           </View>
 
           <View style={styles.greetingBlock}>
             <Text style={styles.goodMorning}>{greeting}</Text>
-            <Text style={styles.hello}>{user?.firstname || "..."}</Text>
+            <Text
+              style={[styles.hello, isCompact ? styles.helloCompact : null]}
+            >
+              {user?.firstname || "..."}
+            </Text>
           </View>
         </View>
 
-        <View style={styles.card}>
+        <View style={[styles.card, isCompact ? styles.cardCompact : null]}>
           <View style={styles.streakHeader}>
             <Text style={styles.streakTitle}>Trainings-Streak</Text>
 
@@ -258,7 +276,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={styles.card}>
+        <View style={[styles.card, isCompact ? styles.cardCompact : null]}>
           <View style={styles.lastWorkoutHeader}>
             <Text style={styles.lastWorkoutTitle}>Letztes Workout</Text>
             {lastWorkout ? (
@@ -276,7 +294,14 @@ export default function HomeScreen() {
 
           {lastWorkout ? (
             <>
-              <Text style={styles.lastWorkoutName}>{lastWorkout.name}</Text>
+              <Text
+                style={[
+                  styles.lastWorkoutName,
+                  isCompact ? styles.lastWorkoutNameCompact : null,
+                ]}
+              >
+                {lastWorkout.name}
+              </Text>
               <View style={styles.lastWorkoutInfoRow}>
                 <View style={styles.lastWorkoutInfoCard}>
                   <Text style={styles.lastWorkoutInfoLabel}>Dauer</Text>
@@ -293,7 +318,12 @@ export default function HomeScreen() {
             </>
           ) : (
             <>
-              <Text style={styles.lastWorkoutName}>
+              <Text
+                style={[
+                  styles.lastWorkoutName,
+                  isCompact ? styles.lastWorkoutNameCompact : null,
+                ]}
+              >
                 Noch kein Workout gespeichert
               </Text>
               <Text style={styles.lastWorkoutEmptyText}>
@@ -303,11 +333,21 @@ export default function HomeScreen() {
           )}
         </View>
 
-        <View style={styles.trainingCard}>
+        <View
+          style={[
+            styles.trainingCard,
+            isCompact ? styles.trainingCardCompact : null,
+          ]}
+        >
           <View style={styles.decoCircle1} />
           <View style={styles.decoCircle2} />
 
-          <View style={styles.trainingTop}>
+          <View
+            style={[
+              styles.trainingTop,
+              isCompact ? styles.trainingTopCompact : null,
+            ]}
+          >
             <Text style={styles.trainingLabel}>HEUTIGES TRAINING</Text>
 
             {selectedTrainingLoading ? (
@@ -327,17 +367,34 @@ export default function HomeScreen() {
 
           {selectedTrainingLoading ? (
             <>
-              <Text style={styles.trainingMain}>Lade Trainingsplan...</Text>
+              <Text
+                style={[
+                  styles.trainingMain,
+                  isCompact ? styles.trainingMainCompact : null,
+                ]}
+              >
+                Lade Trainingsplan...
+              </Text>
               <View style={styles.trainingButtonWrap}>
                 <SecondaryButton text="TRAINING STARTEN" disabled />
               </View>
             </>
           ) : selectedTrainingPlan ? (
             <>
-              <Text style={styles.trainingMain}>
+              <Text
+                style={[
+                  styles.trainingMain,
+                  isCompact ? styles.trainingMainCompact : null,
+                ]}
+              >
                 {selectedTrainingPlan.training_plan.name}
               </Text>
-              <Text style={styles.trainingSubtext}>
+              <Text
+                style={[
+                  styles.trainingSubtext,
+                  isCompact ? styles.trainingSubtextCompact : null,
+                ]}
+              >
                 {selectedTrainingPlan.training_plan.description ||
                   `${selectedTrainingPlan.training_plan.sessions_per_week}x pro Woche`}
               </Text>
@@ -353,7 +410,12 @@ export default function HomeScreen() {
             </>
           ) : (
             <>
-              <Text style={styles.trainingMain}>
+              <Text
+                style={[
+                  styles.trainingMain,
+                  isCompact ? styles.trainingMainCompact : null,
+                ]}
+              >
                 Keinen Trainingsplan ausgewählt
               </Text>
 
@@ -401,12 +463,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.screenPaddingHorizontal,
     paddingTop: spacing.screenPaddingTop,
-    paddingBottom: spacing.xl,
+  },
+  scrollContentCompact: {
+    paddingTop: spacing.md,
   },
   topRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: spacing.lg,
+  },
+  topRowCompact: {
+    marginBottom: spacing.md,
   },
   avatarIconWrap: {
     width: 48,
@@ -416,6 +483,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md,
+  },
+  avatarIconWrapCompact: {
+    width: 42,
+    height: 42,
+    marginRight: spacing.sm,
   },
   greetingBlock: {
     flex: 1,
@@ -433,6 +505,9 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: colors.textPrimary,
   },
+  helloCompact: {
+    fontSize: 24,
+  },
   card: {
     backgroundColor: colors.white,
     borderRadius: 24,
@@ -442,6 +517,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 14,
     elevation: 3,
+  },
+  cardCompact: {
+    padding: spacing.sm,
   },
   streakHeader: {
     flexDirection: "row",
@@ -536,6 +614,10 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.md,
   },
+  lastWorkoutNameCompact: {
+    fontSize: 20,
+    marginBottom: spacing.sm,
+  },
   lastWorkoutInfoRow: {
     flexDirection: "row",
     gap: spacing.sm,
@@ -576,6 +658,9 @@ const styles = StyleSheet.create({
     elevation: 4,
     overflow: "hidden",
   },
+  trainingCardCompact: {
+    padding: spacing.sm,
+  },
   decoCircle1: {
     position: "absolute",
     width: 220,
@@ -599,6 +684,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: spacing.md,
+  },
+  trainingTopCompact: {
+    marginBottom: spacing.sm,
   },
   trainingLabel: {
     fontFamily: "Inter",
@@ -633,6 +721,10 @@ const styles = StyleSheet.create({
     color: colors.white,
     marginBottom: spacing.sm,
   },
+  trainingMainCompact: {
+    fontSize: 24,
+    marginBottom: spacing.xs,
+  },
   trainingSubtext: {
     fontFamily: "Inter",
     fontSize: 14,
@@ -640,6 +732,11 @@ const styles = StyleSheet.create({
     marginTop: -spacing.xs,
     marginBottom: spacing.sm,
     lineHeight: 20,
+  },
+  trainingSubtextCompact: {
+    fontSize: 13,
+    marginTop: 0,
+    lineHeight: 18,
   },
   trainingButtonWrap: {
     marginTop: -spacing.xs,

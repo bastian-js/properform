@@ -17,6 +17,7 @@ import api from "@/src/utils/axiosInstance";
 import CreatePlanModal from "@/src/components/modals/CreatePlanModal";
 import EditPlanModal from "@/src/components/modals/EditPlanModal";
 import WorkoutModal from "@/src/components/modals/WorkoutModal";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 type TrainingPlan = {
   tpid: number;
@@ -45,6 +46,7 @@ const getSportIcon = (sport: string) => {
 };
 
 export default function TrainingScreen() {
+  const tabBarHeight = useBottomTabBarHeight();
   const [activeTab, setActiveTab] = useState("Eigene Pläne");
   const [plans, setPlans] = useState<TrainingPlan[]>([]);
   const [userPlans, setUserPlans] = useState<UserTrainingPlan[]>([]);
@@ -290,7 +292,10 @@ export default function TrainingScreen() {
           {!loading && plans.length > 0 && (
             <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[
+                styles.list,
+                { paddingBottom: tabBarHeight + spacing.xl },
+              ]}
             >
               {plans.map((plan) => {
                 const userPlan = getUserPlanForTrainingPlan(plan.tpid);
@@ -471,7 +476,6 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: spacing.sm,
-    paddingBottom: spacing.xl,
   },
   planCard: {
     flexDirection: "row",

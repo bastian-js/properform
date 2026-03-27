@@ -11,12 +11,15 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OnboardingTrainingModeScreen() {
   const router = useRouter();
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
 
   const handleBack = () => {
     router.back();
@@ -26,19 +29,27 @@ export default function OnboardingTrainingModeScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <Header />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isCompact ? styles.scrollContentCompact : null,
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, isCompact ? styles.headerCompact : null]}>
           <Text style={typography.title}>Wie möchtest du trainieren?</Text>
           <Text style={[typography.body, styles.subheader]}>
             Du kannst das jederzeit später ändern
           </Text>
         </View>
 
-        <View style={styles.choiceContainer}>
+        <View
+          style={[
+            styles.choiceContainer,
+            isCompact ? styles.choiceContainerCompact : null,
+          ]}
+        >
           <TouchableOpacity
-            style={styles.choiceCard}
+            style={[styles.choiceCard, isCompact ? styles.choiceCardCompact : null]}
             onPress={() => router.push("/(onboarding)/VerifyEmailScreen")}
             activeOpacity={0.8}
           >
@@ -59,7 +70,11 @@ export default function OnboardingTrainingModeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.choiceCard, styles.choiceCardBlue]}
+            style={[
+              styles.choiceCard,
+              styles.choiceCardBlue,
+              isCompact ? styles.choiceCardCompact : null,
+            ]}
             onPress={() =>
               router.push("../(onboarding)/OnboardingTrainerCodeScreen")
             }
@@ -80,7 +95,9 @@ export default function OnboardingTrainingModeScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.navigation}>
+        <View
+          style={[styles.navigation, isCompact ? styles.navigationCompact : null]}
+        >
           <TouchableOpacity style={styles.arrowButton} onPress={handleBack}>
             <Icon name="arrow-back" size={24} color={colors.white} />
           </TouchableOpacity>
@@ -104,8 +121,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingTop: spacing.md,
   },
+  scrollContentCompact: {
+    paddingTop: spacing.sm,
+  },
   header: {
     marginBottom: spacing.lg,
+  },
+  headerCompact: {
+    marginBottom: spacing.md,
   },
   subheader: {
     fontSize: 18,
@@ -113,6 +136,9 @@ const styles = StyleSheet.create({
   },
   choiceContainer: {
     gap: spacing.md,
+  },
+  choiceContainerCompact: {
+    gap: spacing.sm,
   },
   choiceCard: {
     backgroundColor: colors.white,
@@ -123,6 +149,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
+  },
+  choiceCardCompact: {
+    padding: spacing.md,
   },
   choiceCardBlue: {
     backgroundColor: colors.primaryBlue,
@@ -164,6 +193,9 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     paddingTop: spacing.md,
     paddingBottom: spacing.xl + 20,
+  },
+  navigationCompact: {
+    paddingBottom: spacing.xl,
   },
   arrowButton: {
     width: 56,

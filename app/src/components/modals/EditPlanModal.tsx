@@ -9,6 +9,8 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { colors } from "@/src/theme/colors";
@@ -188,7 +190,10 @@ export default function EditPlanModal({
     >
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} onPress={onClose} />
-        <View style={styles.sheet}>
+        <KeyboardAvoidingView
+          style={styles.sheet}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <View style={styles.handle} />
           <View style={styles.header}>
             <Text style={styles.title}>
@@ -203,6 +208,7 @@ export default function EditPlanModal({
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.content}
+              keyboardShouldPersistTaps="handled"
             >
               <Text style={styles.label}>Name *</Text>
               <TextInput
@@ -296,6 +302,7 @@ export default function EditPlanModal({
                   style={styles.stepTwoScroll}
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={styles.exerciseList}
+                  keyboardShouldPersistTaps="handled"
                 >
                   {allExercises.map((ex) => {
                     const selected = selectedEids.includes(ex.eid);
@@ -354,7 +361,7 @@ export default function EditPlanModal({
               </TouchableOpacity>
             </View>
           )}
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

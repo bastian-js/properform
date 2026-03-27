@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -235,7 +236,10 @@ export default function CreatePlanModal({
     >
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} onPress={onClose} />
-        <View style={styles.sheet}>
+        <KeyboardAvoidingView
+          style={styles.sheet}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <View style={styles.handle} />
           <View style={styles.header}>
             <Text style={styles.title}>
@@ -250,6 +254,7 @@ export default function CreatePlanModal({
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.content}
+              keyboardShouldPersistTaps="handled"
             >
               <Text style={styles.label}>Name *</Text>
               <TextInput
@@ -394,6 +399,7 @@ export default function CreatePlanModal({
                   style={styles.stepTwoScroll}
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={styles.exerciseList}
+                  keyboardShouldPersistTaps="handled"
                 >
                   {exercises.map((ex) => {
                     const selected = selectedEids.includes(ex.eid);
@@ -452,7 +458,7 @@ export default function CreatePlanModal({
               </TouchableOpacity>
             </View>
           )}
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

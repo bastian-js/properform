@@ -18,12 +18,15 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -77,19 +80,24 @@ export default function LoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isCompact ? styles.scrollContentCompact : null,
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "none"}
         >
-          <View style={styles.headerSection}>
+          <View
+            style={[styles.headerSection, isCompact ? styles.headerSectionCompact : null]}
+          >
             <Text style={typography.title}>Willkommen zurück</Text>
             <Text style={[typography.body, styles.subheader]}>
               Melde dich mit deinem Account an
             </Text>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, isCompact ? styles.cardCompact : null]}>
             <InputField
               title="E-Mail"
               value={email}
@@ -129,7 +137,9 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.navigation}>
+          <View
+            style={[styles.navigation, isCompact ? styles.navigationCompact : null]}
+          >
             <TouchableOpacity
               style={styles.arrowButton}
               onPress={() => {
@@ -175,8 +185,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingTop: spacing.md,
   },
+  scrollContentCompact: {
+    paddingTop: spacing.sm,
+  },
   headerSection: {
     marginBottom: spacing.lg,
+  },
+  headerSectionCompact: {
+    marginBottom: spacing.md,
   },
   subheader: {
     fontSize: 18,
@@ -192,6 +208,10 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
+  },
+  cardCompact: {
+    padding: spacing.sm,
+    gap: spacing.xs,
   },
   checkboxContainer: {
     flexDirection: "row",
@@ -228,6 +248,10 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
     marginTop: "auto",
     paddingTop: spacing.lg,
+  },
+  navigationCompact: {
+    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
   },
   arrowButton: {
     width: 56,

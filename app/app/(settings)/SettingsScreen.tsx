@@ -13,12 +13,15 @@ import {
   Switch,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { width, height: screenHeight } = useWindowDimensions();
+  const isCompact = width < 380 || screenHeight < 750;
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = React.useState(false);
 
@@ -102,14 +105,20 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isCompact ? styles.contentCompact : null,
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.section}>
+        <View style={[styles.section, isCompact ? styles.sectionCompact : null]}>
           <Text style={styles.sectionTitle}>KONTO</Text>
 
           <TouchableOpacity
-            style={styles.settingItem}
+            style={[
+              styles.settingItem,
+              isCompact ? styles.settingItemCompact : null,
+            ]}
             onPress={() => router.push("/(settings)/EditProfileScreen")}
           >
             <View style={styles.settingLeft}>
@@ -125,7 +134,10 @@ export default function SettingsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.settingItem}
+            style={[
+              styles.settingItem,
+              isCompact ? styles.settingItemCompact : null,
+            ]}
             onPress={handlePasswordReset}
           >
             <View style={styles.settingLeft}>
@@ -141,10 +153,15 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, isCompact ? styles.sectionCompact : null]}>
           <Text style={styles.sectionTitle}>BENACHRICHTIGUNGEN</Text>
 
-          <View style={styles.settingItem}>
+          <View
+            style={[
+              styles.settingItem,
+              isCompact ? styles.settingItemCompact : null,
+            ]}
+          >
             <View style={styles.settingLeft}>
               <Icon name="notifications" size={22} color={colors.primaryBlue} />
               <View style={styles.settingText}>
@@ -161,7 +178,12 @@ export default function SettingsScreen() {
             />
           </View>
 
-          <View style={styles.settingItem}>
+          <View
+            style={[
+              styles.settingItem,
+              isCompact ? styles.settingItemCompact : null,
+            ]}
+          >
             <View style={styles.settingLeft}>
               <Icon name="mail" size={22} color={colors.primaryBlue} />
               <View style={styles.settingText}>
@@ -182,10 +204,15 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, isCompact ? styles.sectionCompact : null]}>
           <Text style={styles.sectionTitle}>DARSTELLUNG</Text>
 
-          <View style={styles.settingItem}>
+          <View
+            style={[
+              styles.settingItem,
+              isCompact ? styles.settingItemCompact : null,
+            ]}
+          >
             <View style={styles.settingLeft}>
               <Icon name="dark-mode" size={22} color={colors.primaryBlue} />
               <View style={styles.settingText}>
@@ -202,10 +229,15 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, isCompact ? styles.sectionCompact : null]}>
           <Text style={styles.sectionTitle}>SUPPORT</Text>
 
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              isCompact ? styles.settingItemCompact : null,
+            ]}
+          >
             <View style={styles.settingLeft}>
               <Icon name="help" size={22} color={colors.primaryBlue} />
               <View style={styles.settingText}>
@@ -218,7 +250,12 @@ export default function SettingsScreen() {
             <Icon name="arrow-forward" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={[
+              styles.settingItem,
+              isCompact ? styles.settingItemCompact : null,
+            ]}
+          >
             <View style={styles.settingLeft}>
               <Icon name="info" size={22} color={colors.primaryBlue} />
               <View style={styles.settingText}>
@@ -232,7 +269,10 @@ export default function SettingsScreen() {
 
         <View style={styles.logoutSection}>
           <TouchableOpacity
-            style={styles.logoutButton}
+            style={[
+              styles.logoutButton,
+              isCompact ? styles.logoutButtonCompact : null,
+            ]}
             onPress={handleLogout}
             activeOpacity={0.85}
           >
@@ -277,6 +317,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.screenPaddingHorizontal,
     paddingVertical: spacing.lg,
   },
+  contentCompact: {
+    paddingVertical: spacing.md,
+  },
   section: {
     marginBottom: spacing.xl,
     backgroundColor: colors.white,
@@ -286,6 +329,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+  },
+  sectionCompact: {
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: 12,
@@ -305,6 +351,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
+  },
+  settingItemCompact: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
   },
   settingLeft: {
     flex: 1,
@@ -343,6 +393,9 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
+  },
+  logoutButtonCompact: {
+    minHeight: 54,
   },
   logoutText: {
     fontSize: 16,
