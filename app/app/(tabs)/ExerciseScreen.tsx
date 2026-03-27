@@ -248,7 +248,16 @@ export default function ExerciseScreen() {
               </TouchableOpacity>
             ))}
 
-            {page < totalPages && (
+            {searchQuery.trim().length > 0 && filtered.length === 0 && (
+              <View style={styles.emptySearchState}>
+                <Text style={styles.emptySearchTitle}>Kein Suchergebnis</Text>
+                <Text style={styles.emptySearchText}>
+                  Versuche einen anderen Begriff.
+                </Text>
+              </View>
+            )}
+
+            {filtered.length > 0 && page < totalPages && (
               <TouchableOpacity
                 style={styles.loadMoreButton}
                 onPress={handleLoadMore}
@@ -293,16 +302,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.white,
-    borderRadius: 12,
-    paddingHorizontal: spacing.sm,
+    borderRadius: 18,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     marginBottom: spacing.md,
     gap: spacing.xs,
     shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
   },
   searchInput: {
     flex: 1,
@@ -394,6 +403,26 @@ const styles = StyleSheet.create({
     color: colors.primaryBlue,
     fontWeight: "600",
     fontSize: 14,
+  },
+  emptySearchState: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: spacing.lg,
+    alignItems: "center",
+    marginTop: spacing.xs,
+  },
+  emptySearchTitle: {
+    ...typography.body,
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  emptySearchText: {
+    ...typography.body,
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: "center",
   },
   loadMoreButton: {
     backgroundColor: colors.primaryBlue,
