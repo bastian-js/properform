@@ -10,12 +10,17 @@ export function createRateLimiter({
     max,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.method === "OPTIONS",
 
     keyGenerator: (req) => {
+      const routeScope = `${req.method}:${req.baseUrl}${req.route?.path || req.path}`;
+
       if (key === "user" && req.user?.uid) {
-        return `user:${req.user.uid}`;
+        return `${routeScope}:user:${req.user.uid}`;
       }
-      return req.ip;
+
+      const ipKey = ipKeyGenerator(req.ip || req.socket?.remoteAddress || "");
+      return `${routeScope}:ip:${ipKey}`;
     },
 
     handler: (req, res) => {
