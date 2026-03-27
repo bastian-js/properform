@@ -4,7 +4,7 @@ import UpdatedateStreak from "./UpdateStreak.js";
 
 const router = express.Router();
 
-router.use(GetStreaksByType);
 router.use(UpdatedateStreak);
+router.use(GetStreaksByType);
 
 export default router;
