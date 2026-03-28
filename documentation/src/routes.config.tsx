@@ -49,12 +49,11 @@ import PostTrainersConnect from "./pages/api-reference/trainers/post-trainers-co
 import DeleteUsersUid from "./pages/api-reference/users/delete-users-uid";
 import GetUsersMe from "./pages/api-reference/users/get-users-me";
 import GetUsers from "./pages/api-reference/users/get-users";
-import GetUsersRole from "./pages/api-reference/users/get-users-role";
 import GetUsersStats from "./pages/api-reference/users/get-users-stats";
 import GetUsersMeTrainer from "./pages/api-reference/users/get-users-me-trainer";
 import PutUsersMe from "./pages/api-reference/users/put-users-me";
-import PostStreakUpdate from "./pages/api-reference/users/post-streak-update";
-import PostStreakType from "./pages/api-reference/users/post-streak-type";
+import PostUsersStreaksUpdate from "./pages/api-reference/users/post-users-streaks-update";
+import GetUsersStreaksType from "./pages/api-reference/users/get-users-streaks-type";
 
 // weight
 import GetLogsWeight from "./pages/api-reference/weight/get-logs-weight";
@@ -128,14 +127,13 @@ export const apiRoutes = [
 
   // users
   { path: "api/users", element: <GetUsers /> },
-  { path: "api/users/:role", element: <GetUsersRole /> },
   { path: "api/users/me", element: <GetUsersMe /> },
   { path: "api/users/me/update", element: <PutUsersMe /> },
   { path: "api/users/me/trainer", element: <GetUsersMeTrainer /> },
   { path: "api/users/stats", element: <GetUsersStats /> },
   { path: "api/users/delete/:uid", element: <DeleteUsersUid /> },
-  { path: "api/streak/update", element: <PostStreakUpdate /> },
-  { path: "api/streak/:type", element: <PostStreakType /> },
+  { path: "api/users/streaks/update", element: <PostUsersStreaksUpdate /> },
+  { path: "api/users/streaks/:type", element: <GetUsersStreaksType /> },
 
   // weight
   { path: "api/logs/weight", element: <PostLogsWeight /> },

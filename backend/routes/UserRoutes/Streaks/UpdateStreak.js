@@ -4,6 +4,13 @@ import { requireAuth } from "../../../middleware/auth.js";
 
 const router = express.Router();
 
+function getYesterday(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  date.setDate(date.getDate() - 1);
+  return date.toLocaleDateString("en-CA");
+}
+
 router.post("/update", requireAuth, async (req, res) => {
   const uid = req.user.uid;
   const { type } = req.body;
@@ -13,86 +20,77 @@ router.post("/update", requireAuth, async (req, res) => {
   }
 
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date().toLocaleDateString("en-CA");
 
-    // check if a new log entry is created
-    const [logResult] = await db.query(
+    await db.query(
       `
-      insert ignore into streak_logs (uid, type, activity_date)
-      values (?, ?, ?)
+      INSERT IGNORE INTO streak_logs (uid, type, activity_date)
+      VALUES (?, ?, ?)
       `,
       [uid, type, today],
     );
 
-    // if no row inserted, streak already updated today
-    if (logResult.affectedRows === 0) {
-      const [rows] = await db.query(
-        `select current_streak, longest_streak from streaks where uid = ? and type = ?`,
-        [uid, type],
-      );
-
-      return res.status(200).json({
-        message: "streak already updated today.",
-        current_streak: rows[0]?.current_streak ?? 1,
-        longest_streak: rows[0]?.longest_streak ?? 1,
-      });
-    }
-
-    const [rows] = await db.query(
+    const [logs] = await db.query(
       `
-      select * from streaks where uid = ? and type = ?
+      SELECT DATE_FORMAT(activity_date, '%Y-%m-%d') AS activity_date
+      FROM streak_logs
+      WHERE uid = ? AND type = ?
+      ORDER BY activity_date DESC
       `,
       [uid, type],
     );
 
-    // create initial streak if none exists
+    let newCurrent = 0;
+    let expectedDate = today;
+
+    for (const log of logs) {
+      if (log.activity_date === expectedDate) {
+        newCurrent++;
+        expectedDate = getYesterday(expectedDate);
+      } else {
+        break;
+      }
+    }
+
+    const [rows] = await db.query(
+      `
+      SELECT current_streak, longest_streak
+      FROM streaks
+      WHERE uid = ? AND type = ?
+      `,
+      [uid, type],
+    );
+
     if (!rows.length) {
       await db.query(
         `
-        insert into streaks (uid, type, current_streak, longest_streak, last_activity_date)
-        values (?, ?, 1, 1, ?)
+        INSERT INTO streaks (uid, type, current_streak, longest_streak, last_activity_date)
+        VALUES (?, ?, ?, ?, ?)
         `,
-        [uid, type, today],
+        [uid, type, newCurrent, newCurrent, today],
       );
 
       return res.status(200).json({
         message: "streak created.",
-        current_streak: 1,
-        longest_streak: 1,
+        current_streak: newCurrent,
+        longest_streak: newCurrent,
       });
     }
 
     const streak = rows[0];
-    const lastDate = streak.last_activity_date;
-
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    let newCurrent = 1;
-
-    if (lastDate) {
-      const last = new Date(lastDate).toISOString().slice(0, 10);
-      const yest = yesterday.toISOString().slice(0, 10);
-
-      // increase streak if last activity was yesterday
-      if (last === yest) {
-        newCurrent = streak.current_streak + 1;
-      }
-    }
-
     const newLongest = Math.max(newCurrent, streak.longest_streak);
 
     await db.query(
       `
-      update streaks
-      set current_streak = ?, longest_streak = ?, last_activity_date = ?
-      where uid = ? and type = ?
+      UPDATE streaks
+      SET current_streak = ?, longest_streak = ?, last_activity_date = ?
+      WHERE uid = ? AND type = ?
       `,
       [newCurrent, newLongest, today, uid, type],
     );
 
     return res.status(200).json({
-      message: "streak updated succesfully.",
+      message: "streak updated successfully.",
       current_streak: newCurrent,
       longest_streak: newLongest,
     });

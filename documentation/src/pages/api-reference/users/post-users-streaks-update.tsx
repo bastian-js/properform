@@ -3,11 +3,11 @@ import Text from "../../../components/docs/Text";
 import CodeBlock from "../../../components/docs/CodeBlock";
 import Label from "../../../components/Label";
 
-export default function PostStreakUpdate() {
+export default function PostUsersStreaksUpdate() {
   return (
     <div className="px-6 py-8 space-y-6">
       <div className="flex items-center gap-3">
-        <code>POST /streak/update</code>
+        <code>POST /users/streaks/update</code>
         <Label text="Protected route" color="#F59E0B" />
       </div>
 

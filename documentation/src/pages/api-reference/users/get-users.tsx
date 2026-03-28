@@ -22,14 +22,15 @@ export default function GetUsers() {
       <Heading>Query Parameters</Heading>
       <CodeBlock
         language="http"
-        code={`page   (number, optional, default: 1)
+        code={`role   (string, optional, filter by role: "owners", "users", "trainers")
+page   (number, optional, default: 1)
 limit  (number, optional, default: 10, max: 100)`}
       />
 
       <Heading>Example Request</Heading>
       <CodeBlock
         language="http"
-        code={`GET /users?page=1&limit=10
+        code={`GET /users?role=users&page=1&limit=10
 Authorization: Bearer <JWT_TOKEN>`}
       />
 

@@ -4,7 +4,7 @@ import { requireAuth } from "../../../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/:type", requireAuth, async (req, res) => {
+router.get("/:type", requireAuth, async (req, res) => {
   const uid = req.user.uid;
   const { type } = req.params;
 
@@ -18,19 +18,29 @@ router.post("/:type", requireAuth, async (req, res) => {
         SELECT current_streak, longest_streak, last_activity_date
         FROM streaks
         WHERE uid = ? AND type = ?
-        `,
+      `,
       [uid, type],
     );
 
-    if (!rows.length) {
-      return res.status(200).json({
-        current_streak: 0,
-        longest_streak: 0,
-        last_activity_date: null,
-      });
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "no streak found for this type." });
     }
 
-    res.status(200).json(rows[0]);
+    const [streakLogsRows] = await db.query(
+      `
+        SELECT activity_date, created_at 
+        FROM streak_logs
+        WHERE uid = ? AND type = ?
+      `,
+      [uid, type],
+    );
+
+    res.status(200).json({
+      streak: rows[0],
+      logs: streakLogsRows,
+    });
   } catch (err) {
     console.log("get streak by type error.", err);
     return res

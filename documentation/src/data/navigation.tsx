@@ -99,14 +99,16 @@ export const navLinks: NavLink[] = [
         label: "Users",
         subLinks: [
           { to: "/api/users", label: "GET /users" },
-          { to: "/api/users/:role", label: "GET /users/:role" },
           { to: "/api/users/me", label: "GET /users/me" },
           { to: "/api/users/me/update", label: "PUT /users/me" },
           { to: "/api/users/me/trainer", label: "GET /users/me/trainer" },
           { to: "/api/users/stats", label: "GET /users/stats" },
           { to: "/api/users/delete/:uid", label: "DELETE /users/:uid" },
-          { to: "/api/streak/update", label: "POST /streak/update" },
-          { to: "/api/streak/:type", label: "POST /streak/:type" },
+          {
+            to: "/api/users/streaks/update",
+            label: "POST /users/streaks/update",
+          },
+          { to: "/api/users/streaks/:type", label: "GET /users/streaks/:type" },
         ],
       },
       {
@@ -120,6 +122,7 @@ export const navLinks: NavLink[] = [
         label: "Exercises",
         subLinks: [
           { to: "/api/exercises", label: "GET /exercises" },
+          { to: "/api/exercises/:eid", label: "GET /exercises/:eid" },
           {
             to: "/api/admin/exercises/create",
             label: "POST /admin/exercises/create",
