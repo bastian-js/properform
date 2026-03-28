@@ -4,7 +4,6 @@ import { requireAuth } from "../../../middleware/auth.js";
 
 const router = express.Router();
 
-// helper
 function getYesterday(dateStr) {
   const [y, m, d] = dateStr.split("-").map(Number);
   const date = new Date(y, m - 1, d);
@@ -16,14 +15,13 @@ router.post("/update", requireAuth, async (req, res) => {
   const uid = req.user.uid;
   const { type, date } = req.body;
 
-  if (!type || !date) {
-    return res.status(400).json({ message: "type and date are required." });
+  if (!type) {
+    return res.status(400).json({ message: "type is required." });
   }
 
   try {
-    const today = date;
+    const today = date || new Date().toLocaleDateString("en-CA");
 
-    // insert log
     await db.query(
       `
       INSERT IGNORE INTO streak_logs (uid, type, activity_date)
@@ -32,10 +30,9 @@ router.post("/update", requireAuth, async (req, res) => {
       [uid, type, today],
     );
 
-    // hol ALLE logs
     const [logs] = await db.query(
       `
-      SELECT activity_date
+      SELECT DATE_FORMAT(activity_date, '%Y-%m-%d') AS activity_date
       FROM streak_logs
       WHERE uid = ? AND type = ?
       ORDER BY activity_date DESC
@@ -43,27 +40,22 @@ router.post("/update", requireAuth, async (req, res) => {
       [uid, type],
     );
 
-    // 🔥 streak berechnen (robust)
     let newCurrent = 0;
     let expectedDate = today;
 
     for (const log of logs) {
       if (log.activity_date === expectedDate) {
         newCurrent++;
-
-        const [y, m, d] = expectedDate.split("-").map(Number);
-        const dObj = new Date(y, m - 1, d);
-        dObj.setDate(dObj.getDate() - 1);
-        expectedDate = dObj.toLocaleDateString("en-CA");
+        expectedDate = getYesterday(expectedDate);
       } else {
         break;
       }
     }
 
-    // streak row holen
     const [rows] = await db.query(
       `
-      SELECT * FROM streaks 
+      SELECT current_streak, longest_streak
+      FROM streaks
       WHERE uid = ? AND type = ?
       `,
       [uid, type],
@@ -86,7 +78,6 @@ router.post("/update", requireAuth, async (req, res) => {
     }
 
     const streak = rows[0];
-
     const newLongest = Math.max(newCurrent, streak.longest_streak);
 
     await db.query(
