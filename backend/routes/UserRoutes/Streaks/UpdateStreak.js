@@ -6,14 +6,18 @@ const router = express.Router();
 
 router.post("/update", requireAuth, async (req, res) => {
   const uid = req.user.uid;
-  const { type } = req.body;
+  const { type, date } = req.body;
 
   if (!type) {
     return res.status(400).json({ message: "type is required." });
   }
 
   try {
-    const today = new Date().toLocaleDateString("en-CA");
+    // ✅ DEV override möglich
+    const today =
+      process.env.NODE_ENV === "development" && date
+        ? date
+        : new Date().toLocaleDateString("en-CA");
 
     const [logResult] = await db.query(
       `
@@ -66,7 +70,7 @@ router.post("/update", requireAuth, async (req, res) => {
 
     const streak = rows[0];
 
-    const yesterday = new Date();
+    const yesterday = new Date(today); // nutzt override korrekt
     yesterday.setDate(yesterday.getDate() - 1);
     const yest = yesterday.toLocaleDateString("en-CA");
 
