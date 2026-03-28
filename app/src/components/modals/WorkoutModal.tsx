@@ -74,15 +74,18 @@ export default function WorkoutModal({
     }
   }, []);
 
-  const startTimer = useCallback((resetSeconds = true) => {
-    stopTimer();
-    if (resetSeconds) {
-      setSeconds(0);
-    }
-    timerRef.current = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-    }, 1000);
-  }, [stopTimer]);
+  const startTimer = useCallback(
+    (resetSeconds = true) => {
+      stopTimer();
+      if (resetSeconds) {
+        setSeconds(0);
+      }
+      timerRef.current = setInterval(() => {
+        setSeconds((prev) => prev + 1);
+      }, 1000);
+    },
+    [stopTimer],
+  );
 
   const resetWorkout = useCallback(() => {
     stopTimer();
@@ -156,7 +159,15 @@ export default function WorkoutModal({
     setIsFinished(false);
     void loadExercises();
     startTimer();
-  }, [visible, planId, workoutData.length, isFinished, loadExercises, startTimer, stopTimer]);
+  }, [
+    visible,
+    planId,
+    workoutData.length,
+    isFinished,
+    loadExercises,
+    startTimer,
+    stopTimer,
+  ]);
 
   useEffect(() => {
     return () => stopTimer();
@@ -335,7 +346,10 @@ export default function WorkoutModal({
               </View>
 
               <View style={[styles.headerSide, styles.headerSideRight]}>
-                <TouchableOpacity style={styles.iconButton} onPress={handleClose}>
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={handleClose}
+                >
                   <Icon name="close" size={24} color={colors.textPrimary} />
                 </TouchableOpacity>
               </View>

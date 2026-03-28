@@ -34,6 +34,53 @@ const formatWorkoutDuration = (totalSeconds: number) => {
   return `${minutes} min ${String(seconds).padStart(2, "0")} s`;
 };
 
+const getMondayBasedDayIndex = (dateString: string) => {
+  const date = new Date(dateString);
+  const day = date.getDay();
+
+  return day === 0 ? 6 : day - 1;
+};
+
+const getLocalDayKey = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const buildCompletedDaysFromLogs = (
+  logs: { activity_date: string }[],
+  currentStreak: number,
+) => {
+  const completedDays = Array(7).fill(false);
+  const uniqueLogs = [...logs]
+    .sort(
+      (left, right) =>
+        new Date(right.activity_date).getTime() -
+        new Date(left.activity_date).getTime(),
+    )
+    .filter((log, index, allLogs) => {
+      const currentDayKey = getLocalDayKey(log.activity_date);
+
+      return (
+        allLogs.findIndex(
+          (candidateLog) =>
+            getLocalDayKey(candidateLog.activity_date) === currentDayKey,
+        ) === index
+      );
+    })
+    .slice(0, Math.max(0, currentStreak));
+
+  for (const log of uniqueLogs) {
+    const dayIndex = getMondayBasedDayIndex(log.activity_date);
+    completedDays[dayIndex] = true;
+  }
+
+  return completedDays;
+};
+
 type LastWorkout = {
   name: string;
   duration: number;
@@ -109,32 +156,31 @@ export default function HomeScreen() {
     try {
       setStreakLoading(true);
 
-      const response = await api.post("/users/streaks/training");
-      const currentStreak = response.data.current_streak ?? 0;
-      const longest = response.data.longest_streak ?? 0;
-      const lastActivity = response.data.last_activity_date ?? null;
+      const response = await api.get("/users/streaks/training");
+      const responseData = response.data ?? {};
+      const streak = responseData.streak ?? {};
+      const logs = Array.isArray(responseData.logs) ? responseData.logs : [];
+      const currentStreak = streak.current_streak ?? 0;
+      const longest = streak.longest_streak ?? 0;
+      const lastActivity = streak.last_activity_date ?? null;
 
       setStreakDays(currentStreak);
       setLongestStreak(longest);
       setLastActivityDate(lastActivity);
 
-      let visibleCount = currentStreak % 7;
-
-      if (currentStreak > 0 && visibleCount === 0) {
-        visibleCount = 7;
-      }
-
-      const nextCompleted = lastActivity
-        ? Array.from({ length: 7 }, (_, index) => index < visibleCount)
+      const nextCompleted = logs.length
+        ? buildCompletedDaysFromLogs(logs, currentStreak)
         : Array(7).fill(false);
 
       setCompleted(nextCompleted);
     } catch (err: any) {
-      Alert.alert(
-        "Fehler",
-        err.response?.data?.message ||
-          "Training-Streak konnte nicht geladen werden.",
-      );
+      if (err.response?.status !== 404) {
+        Alert.alert(
+          "Fehler",
+          err.response?.data?.message ||
+            "Training-Streak konnte nicht geladen werden.",
+        );
+      }
       setStreakDays(0);
       setLongestStreak(0);
       setLastActivityDate(null);
