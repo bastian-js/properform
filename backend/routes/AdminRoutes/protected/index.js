@@ -1,6 +1,6 @@
 import express from "express";
 import GetUsersByIdOrName from "./GetUsersByIdOrName.js";
-import NotificationRoutes from "./NotificationRoutes.js";
+import NotificationRoutes from "./notificationRoutes.js";
 
 const router = express.Router();
 
