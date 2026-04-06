@@ -9,51 +9,55 @@ const router = express.Router();
 
 const allowedFilters = ["gym", "basketball"];
 
-router.get("/", requireAuth, requireRole("user", "owner"), async (req, res) => {
-  try {
-    const { scope } = req.query;
-    let { filter } = req.query;
+router.get(
+  "/",
+  requireAuth,
+  requireRole("user", "owner", "trainer"),
+  async (req, res) => {
+    try {
+      const { scope } = req.query;
+      let { filter } = req.query;
 
-    let sportId = null;
+      let sportId = null;
 
-    if (filter) {
-      if (!allowedFilters.includes(filter)) {
-        return res.status(400).json({ error: "invalid filter." });
+      if (filter) {
+        if (!allowedFilters.includes(filter)) {
+          return res.status(400).json({ error: "invalid filter." });
+        }
+
+        if (filter === "gym") sportId = 1;
+        if (filter === "basketball") sportId = 2;
       }
 
-      if (filter === "gym") sportId = 1;
-      if (filter === "basketball") sportId = 2;
-    }
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
+      const offset = (page - 1) * limit;
 
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
-    const offset = (page - 1) * limit;
+      let where = "";
+      let params = [];
 
-    let where = "";
-    let params = [];
-
-    if (sportId) {
-      where = "WHERE e.sid = ?";
-      params.push(sportId);
-    }
-
-    const [countResult] = await db.query(
-      `SELECT COUNT(*) as total FROM exercises e ${where}`,
-      params,
-    );
-
-    const total = countResult[0].total;
-    const totalPages = Math.ceil(total / limit);
-
-    let query;
-
-    // owner only
-    if (scope === "admin") {
-      if (req.user.role !== "owner") {
-        return res.status(403).json({ error: "forbidden." });
+      if (sportId) {
+        where = "WHERE e.sid = ?";
+        params.push(sportId);
       }
 
-      query = `
+      const [countResult] = await db.query(
+        `SELECT COUNT(*) as total FROM exercises e ${where}`,
+        params,
+      );
+
+      const total = countResult[0].total;
+      const totalPages = Math.ceil(total / limit);
+
+      let query;
+
+      // owner only
+      if (scope === "admin") {
+        if (req.user.role !== "owner") {
+          return res.status(403).json({ error: "forbidden." });
+        }
+
+        query = `
           SELECT eid, name, created_by
           FROM exercises e
           ${where}
@@ -61,12 +65,12 @@ router.get("/", requireAuth, requireRole("user", "owner"), async (req, res) => {
           LIMIT ? OFFSET ?
         `;
 
-      params.push(limit, offset);
-    }
+        params.push(limit, offset);
+      }
 
-    // user and owner
-    else {
-      query = `
+      // user and owner
+      else {
+        query = `
           SELECT
             e.eid,
             e.name,
@@ -101,23 +105,24 @@ router.get("/", requireAuth, requireRole("user", "owner"), async (req, res) => {
           LIMIT ? OFFSET ?
         `;
 
-      params.push(limit, offset);
+        params.push(limit, offset);
+      }
+
+      const [rows] = await db.query(query, params);
+
+      return res.json({
+        count: rows.length,
+        total,
+        page,
+        limit,
+        totalPages,
+        exercises: rows,
+      });
+    } catch (err) {
+      console.error("fetch exercises failed.", err);
+      return res.status(500).json({ error: "internal server error." });
     }
-
-    const [rows] = await db.query(query, params);
-
-    return res.json({
-      count: rows.length,
-      total,
-      page,
-      limit,
-      totalPages,
-      exercises: rows,
-    });
-  } catch (err) {
-    console.error("fetch exercises failed.", err);
-    return res.status(500).json({ error: "internal server error." });
-  }
-});
+  },
+);
 
 export default router;
