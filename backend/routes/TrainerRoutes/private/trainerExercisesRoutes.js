@@ -11,15 +11,15 @@ router.post(
   requireAuth,
   requireRole("trainer"),
   async (req, res) => {
-    const tid = req.user.tid;
+    const creatorId = req.user.uid ?? req.user.tid ?? null;
     const { name, description, video_url, thumbnail_url, sid, dlid } = req.body;
 
     try {
       const result = await db.query(
         `INSERT INTO exercises
-        (name, description, video_url, thumbnail_url, sid, dlid, tid)
+        (name, description, video_url, thumbnail_url, sid, dlid, created_by)
         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [name, description, video_url, thumbnail_url, sid, dlid, tid],
+        [name, description, video_url, thumbnail_url, sid, dlid, creatorId],
       );
 
       return res.status(201).json({ eid: result.insertId });
@@ -36,13 +36,13 @@ router.put(
   requireRole("trainer"),
   async (req, res) => {
     const { eid } = req.params;
-    const tid = req.user.tid;
+    const creatorId = req.user.uid ?? req.user.tid ?? null;
     const { name, description } = req.body;
 
     try {
       const [check] = await db.query(
-        "SELECT eid FROM exercises WHERE eid = ? AND tid = ?",
-        [eid, tid],
+        "SELECT eid FROM exercises WHERE eid = ? AND created_by = ?",
+        [eid, creatorId],
       );
 
       if (check.length === 0) {
@@ -68,12 +68,12 @@ router.delete(
   requireRole("trainer"),
   async (req, res) => {
     const { eid } = req.params;
-    const tid = req.user.tid;
+    const creatorId = req.user.uid ?? req.user.tid ?? null;
 
     try {
       const result = await db.query(
-        "DELETE FROM exercises WHERE eid = ? AND tid = ?",
-        [eid, tid],
+        "DELETE FROM exercises WHERE eid = ? AND created_by = ?",
+        [eid, creatorId],
       );
 
       if (result.affectedRows === 0) {

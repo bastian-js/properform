@@ -120,7 +120,7 @@ router.post(
       );
 
       const token = jwt.sign(
-        { tid: trainer.tid, role: "trainer" },
+        { uid: trainer.tid, tid: trainer.tid, role: "trainer" },
         process.env.JWT_SECRET,
         {
           expiresIn: "3d",
