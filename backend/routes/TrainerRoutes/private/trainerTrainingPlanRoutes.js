@@ -723,4 +723,61 @@ router.post(
   },
 );
 
+router.delete(
+  "/training-plans/:tpid/exercises/:id",
+  requireAuth,
+  requireRole("trainer"),
+  async (req, res) => {
+    const tid = await requireTrainerContext(req, res);
+    if (!tid) return;
+
+    const trainingPlanId = Number(req.params.tpid);
+    const trainingPlanExerciseId = Number(req.params.id);
+
+    if (
+      !Number.isInteger(trainingPlanId) ||
+      !Number.isInteger(trainingPlanExerciseId)
+    ) {
+      return res.status(400).json({
+        error: "invalid training plan id or training plan exercise id.",
+      });
+    }
+
+    try {
+      const [planRows] = await db.query(
+        "SELECT tpid FROM training_plans WHERE tpid = ? AND created_by_trainer = ?",
+        [trainingPlanId, tid],
+      );
+
+      if (planRows.length === 0) {
+        return res.status(404).json({ error: "training plan not found." });
+      }
+
+      const [exerciseRows] = await db.query(
+        "SELECT id FROM training_plan_exercises WHERE id = ? AND tpid = ?",
+        [trainingPlanExerciseId, trainingPlanId],
+      );
+
+      if (exerciseRows.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "training plan exercise not found." });
+      }
+
+      await db.query("DELETE FROM training_plan_exercises WHERE id = ?", [
+        trainingPlanExerciseId,
+      ]);
+
+      return res.status(200).json({
+        message: "training plan exercise deleted successfully",
+        id: trainingPlanExerciseId,
+        tpid: trainingPlanId,
+      });
+    } catch (error) {
+      console.error("trainer training plan exercise delete failed.", error);
+      return res.status(500).json({ error: "internal server error." });
+    }
+  },
+);
+
 export default router;

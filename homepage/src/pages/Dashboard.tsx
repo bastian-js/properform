@@ -22,6 +22,7 @@ import {
   RefreshCw,
   HelpCircle,
   FileText,
+  Trash2,
 } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
 
@@ -144,10 +145,12 @@ function Modal({
   visible,
   onClose,
   children,
+  panelClassName,
 }: {
   visible: boolean;
   onClose?: () => void;
   children: React.ReactNode;
+  panelClassName?: string;
 }) {
   if (!visible) return null;
   return (
@@ -155,7 +158,10 @@ function Modal({
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-200 px-0 sm:px-4"
       onClick={onClose}
     >
-      <div onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-md">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className={panelClassName ?? "w-full sm:max-w-md"}
+      >
         {children}
       </div>
     </div>
@@ -241,6 +247,8 @@ export default function Dashboard() {
     useState(false);
   const [isAddingExerciseToTrainingPlan, setIsAddingExerciseToTrainingPlan] =
     useState(false);
+  const [removingTrainingPlanExerciseId, setRemovingTrainingPlanExerciseId] =
+    useState<string | null>(null);
   const [isAssigningTrainingPlans, setIsAssigningTrainingPlans] =
     useState(false);
   const [processingRequestId, setProcessingRequestId] = useState<string | null>(
@@ -626,6 +634,57 @@ export default function Dashboard() {
       );
     } finally {
       setIsAddingExerciseToTrainingPlan(false);
+    }
+  };
+
+  const handleRemoveExerciseFromTrainingPlan = async (
+    planExerciseId: string,
+  ) => {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (!selectedTrainingPlanForExercise) {
+      alert("Bitte zuerst einen Trainingsplan waehlen.");
+      return;
+    }
+
+    setRemovingTrainingPlanExerciseId(planExerciseId);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/trainers/training-plans/${selectedTrainingPlanForExercise.tpid}/exercises/${planExerciseId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            data?.message ||
+            "Uebung konnte nicht aus dem Plan entfernt werden.",
+        );
+      }
+
+      await loadTrainingPlanExercises(selectedTrainingPlanForExercise.tpid);
+    } catch (error) {
+      console.error("Uebung konnte nicht aus Plan entfernt werden:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Uebung konnte nicht aus Plan entfernt werden.",
+      );
+    } finally {
+      setRemovingTrainingPlanExerciseId(null);
     }
   };
 
@@ -2191,6 +2250,7 @@ export default function Dashboard() {
       <Modal
         visible={activeModal === "assignExerciseToPlan"}
         onClose={() => setActiveModal(null)}
+        panelClassName="w-full sm:max-w-6xl"
       >
         <div className={modalCard}>
           <div className="flex items-center justify-between mb-4">
@@ -2210,220 +2270,256 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <div className="sm:col-span-2 flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Übung *
-              </label>
-              <select
-                value={trainingPlanExerciseForm.eid}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    eid: e.target.value,
-                  }))
-                }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-              >
-                <option value="">Übung wählen</option>
-                {exercises.map((exercise) => (
-                  <option key={exercise.eid} value={exercise.eid}>
-                    {exercise.name} (EID {exercise.eid})
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4">
+              <p className="text-xs font-semibold text-[#64748b] dark:text-[#94A3B8] uppercase tracking-wider mb-3">
+                Neue Übung zum Plan hinzufügen
+              </p>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Woche *
-              </label>
-              <input
-                value={trainingPlanExerciseForm.weekNumber}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    weekNumber: e.target.value,
-                  }))
-                }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-                placeholder="1"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Tag *
-              </label>
-              <input
-                value={trainingPlanExerciseForm.dayNumber}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    dayNumber: e.target.value,
-                  }))
-                }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-                placeholder="1"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Reihenfolge *
-              </label>
-              <input
-                value={trainingPlanExerciseForm.exerciseOrder}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    exerciseOrder: e.target.value,
-                  }))
-                }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-                placeholder="1"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Sets
-              </label>
-              <input
-                value={trainingPlanExerciseForm.sets}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    sets: e.target.value,
-                  }))
-                }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-                placeholder="z.B. 4"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Reps
-              </label>
-              <input
-                value={trainingPlanExerciseForm.reps}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    reps: e.target.value,
-                  }))
-                }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-                placeholder="z.B. 10"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Dauer (Min)
-              </label>
-              <input
-                value={trainingPlanExerciseForm.durationMinutes}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    durationMinutes: e.target.value,
-                  }))
-                }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-                placeholder="optional"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Pause (Sek)
-              </label>
-              <input
-                value={trainingPlanExerciseForm.restSeconds}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    restSeconds: e.target.value,
-                  }))
-                }
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-                placeholder="optional"
-              />
-            </div>
-            <div className="sm:col-span-2 flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
-                Notiz
-              </label>
-              <textarea
-                value={trainingPlanExerciseForm.notes}
-                onChange={(e) =>
-                  setTrainingPlanExerciseForm((prev) => ({
-                    ...prev,
-                    notes: e.target.value,
-                  }))
-                }
-                className="w-full min-h-20 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all resize-none"
-                placeholder="optional"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-3 mb-4">
-            <button
-              className={`${ghostBtn} flex-1`}
-              onClick={() => setActiveModal(null)}
-            >
-              Schließen
-            </button>
-            <button
-              className={`${primaryBtn} flex-1 ${isAddingExerciseToTrainingPlan ? "opacity-60 cursor-not-allowed" : ""}`}
-              onClick={handleAssignExerciseToTrainingPlan}
-              disabled={isAddingExerciseToTrainingPlan}
-            >
-              {isAddingExerciseToTrainingPlan ? (
-                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-[spin_0.8s_linear_infinite]" />
-              ) : (
-                "Zum Plan hinzufügen"
-              )}
-            </button>
-          </div>
-
-          <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-            <p className="text-xs font-semibold text-[#64748b] dark:text-[#94A3B8] uppercase tracking-wider mb-2">
-              Bereits im Plan
-            </p>
-            <div className="max-h-52 overflow-y-auto flex flex-col gap-2">
-              {isLoadingTrainingPlanExercises ? (
-                <p className="text-xs text-[#64748b] dark:text-[#94A3B8] py-3 text-center">
-                  Lädt...
-                </p>
-              ) : selectedTrainingPlanExercises.length === 0 ? (
-                <p className="text-xs text-[#64748b] dark:text-[#94A3B8] py-3 text-center">
-                  Noch keine Übungen im Plan.
-                </p>
-              ) : (
-                selectedTrainingPlanExercises.map((planExercise) => (
-                  <div
-                    key={planExercise.id}
-                    className="rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2 flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Übung *
+                  </label>
+                  <select
+                    value={trainingPlanExerciseForm.eid}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        eid: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
                   >
-                    <p className="text-xs font-semibold text-[#1E3A8A] dark:text-white">
-                      {planExercise.name}
-                    </p>
-                    <p className="text-xs text-[#64748b] dark:text-[#94A3B8] mt-0.5">
-                      Woche {planExercise.week_number || "-"} · Tag{" "}
-                      {planExercise.day_number || "-"} · Slot{" "}
-                      {planExercise.exercise_order || "-"}
-                      {planExercise.sets ? ` · ${planExercise.sets} Sets` : ""}
-                      {planExercise.reps ? ` · ${planExercise.reps} Reps` : ""}
-                      {planExercise.duration_minutes
-                        ? ` · ${planExercise.duration_minutes} Min.`
-                        : ""}
-                    </p>
-                    {planExercise.description && (
-                      <p className="text-xs text-[#64748b] dark:text-[#94A3B8] mt-1 line-clamp-2">
-                        {planExercise.description}
-                      </p>
-                    )}
-                  </div>
-                ))
-              )}
+                    <option value="">Übung wählen</option>
+                    {exercises.map((exercise) => (
+                      <option key={exercise.eid} value={exercise.eid}>
+                        {exercise.name} (EID {exercise.eid})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Woche *
+                  </label>
+                  <input
+                    value={trainingPlanExerciseForm.weekNumber}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        weekNumber: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
+                    placeholder="1"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Tag *
+                  </label>
+                  <input
+                    value={trainingPlanExerciseForm.dayNumber}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        dayNumber: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
+                    placeholder="1"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Reihenfolge *
+                  </label>
+                  <input
+                    value={trainingPlanExerciseForm.exerciseOrder}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        exerciseOrder: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
+                    placeholder="1"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Sets
+                  </label>
+                  <input
+                    value={trainingPlanExerciseForm.sets}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        sets: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
+                    placeholder="z.B. 4"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Reps
+                  </label>
+                  <input
+                    value={trainingPlanExerciseForm.reps}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        reps: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
+                    placeholder="z.B. 10"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Dauer (Min)
+                  </label>
+                  <input
+                    value={trainingPlanExerciseForm.durationMinutes}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        durationMinutes: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
+                    placeholder="optional"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Pause (Sek)
+                  </label>
+                  <input
+                    value={trainingPlanExerciseForm.restSeconds}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        restSeconds: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all"
+                    placeholder="optional"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#1E3A8A] dark:text-slate-300">
+                    Notiz
+                  </label>
+                  <textarea
+                    value={trainingPlanExerciseForm.notes}
+                    onChange={(e) =>
+                      setTrainingPlanExerciseForm((prev) => ({
+                        ...prev,
+                        notes: e.target.value,
+                      }))
+                    }
+                    className="w-full min-h-20 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#1E3A8A] dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 transition-all resize-none"
+                    placeholder="optional"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-4">
+                <button
+                  className={`${ghostBtn} flex-1`}
+                  onClick={() => setActiveModal(null)}
+                >
+                  Schließen
+                </button>
+                <button
+                  className={`${primaryBtn} flex-1 ${isAddingExerciseToTrainingPlan ? "opacity-60 cursor-not-allowed" : ""}`}
+                  onClick={handleAssignExerciseToTrainingPlan}
+                  disabled={isAddingExerciseToTrainingPlan}
+                >
+                  {isAddingExerciseToTrainingPlan ? (
+                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-[spin_0.8s_linear_infinite]" />
+                  ) : (
+                    "Hinzufügen"
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4">
+              <p className="text-xs font-semibold text-[#64748b] dark:text-[#94A3B8] uppercase tracking-wider mb-2">
+                Bereits im Plan
+              </p>
+              <div className="max-h-128 overflow-y-auto flex flex-col gap-2">
+                {isLoadingTrainingPlanExercises ? (
+                  <p className="text-xs text-[#64748b] dark:text-[#94A3B8] py-3 text-center">
+                    Lädt...
+                  </p>
+                ) : selectedTrainingPlanExercises.length === 0 ? (
+                  <p className="text-xs text-[#64748b] dark:text-[#94A3B8] py-3 text-center">
+                    Noch keine Übungen im Plan.
+                  </p>
+                ) : (
+                  selectedTrainingPlanExercises.map((planExercise) => {
+                    const isRemoving =
+                      removingTrainingPlanExerciseId ===
+                      String(planExercise.id);
+
+                    return (
+                      <div
+                        key={planExercise.id}
+                        className="rounded-lg bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 px-3 py-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-[#1E3A8A] dark:text-white">
+                              {planExercise.name}
+                            </p>
+                            <p className="text-xs text-[#64748b] dark:text-[#94A3B8] mt-0.5">
+                              Woche {planExercise.week_number || "-"} · Tag{" "}
+                              {planExercise.day_number || "-"} · Slot{" "}
+                              {planExercise.exercise_order || "-"}
+                              {planExercise.sets
+                                ? ` · ${planExercise.sets} Sets`
+                                : ""}
+                              {planExercise.reps
+                                ? ` · ${planExercise.reps} Reps`
+                                : ""}
+                              {planExercise.duration_minutes
+                                ? ` · ${planExercise.duration_minutes} Min.`
+                                : ""}
+                            </p>
+                            {planExercise.description && (
+                              <p className="text-xs text-[#64748b] dark:text-[#94A3B8] mt-1 line-clamp-2">
+                                {planExercise.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleRemoveExerciseFromTrainingPlan(
+                                String(planExercise.id),
+                              )
+                            }
+                            disabled={isRemoving}
+                            title="Aus Plan entfernen"
+                            className="p-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 border-0 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
         </div>
