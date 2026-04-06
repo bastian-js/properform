@@ -61,6 +61,7 @@ router.patch(
         `
             SELECT * FROM trainer_requests WHERE id = ? AND tid = ?
             `,
+        [id, tid],
       );
 
       if (rows.length === 0) {
