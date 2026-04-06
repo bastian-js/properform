@@ -77,12 +77,9 @@ router.post(
     } = req.body;
 
     if (!name || !sid || !duration_weeks || !sessions_per_week) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "name, sid, duration_weeks and sessions_per_week are required.",
-        });
+      return res.status(400).json({
+        error: "name, sid, duration_weeks and sessions_per_week are required.",
+      });
     }
 
     const parsedSid = Number(sid);
@@ -166,12 +163,9 @@ router.put(
     }
 
     if (!name || !sid || !duration_weeks || !sessions_per_week) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "name, sid, duration_weeks and sessions_per_week are required.",
-        });
+      return res.status(400).json({
+        error: "name, sid, duration_weeks and sessions_per_week are required.",
+      });
     }
 
     const parsedSid = Number(sid);
@@ -343,6 +337,20 @@ router.post(
         );
 
         createdPlanIds.push(result.insertId);
+      }
+
+      if (createdPlanIds.length > 0) {
+        const [selectedRows] = await db.query(
+          "SELECT id FROM user_training_plans WHERE uid = ? AND is_selected = 1 LIMIT 1",
+          [athleteId],
+        );
+
+        if (selectedRows.length === 0) {
+          await db.query(
+            "UPDATE user_training_plans SET is_selected = 1 WHERE id = ? AND uid = ?",
+            [createdPlanIds[0], athleteId],
+          );
+        }
       }
 
       return res.status(201).json({
