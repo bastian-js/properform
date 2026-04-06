@@ -4,14 +4,23 @@ import { requireAuth } from "../../../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/disconnect", requireAuth, async (req, res) => {
+async function disconnectTrainerConnection(req, res) {
   try {
-    const uid = req.user.uid;
+    const uid = req.user.role === "trainer" ? req.body?.uid : req.user.uid;
 
-    const [result] = await db.execute(
-      "DELETE FROM trainer_athletes WHERE uid = ?",
-      [uid],
-    );
+    if (!uid) {
+      return res.status(400).json({ message: "uid is required." });
+    }
+
+    const params = [uid];
+    let query = "DELETE FROM trainer_athletes WHERE athlete_uid = ?";
+
+    if (req.user.role === "trainer") {
+      query += " AND tid = ?";
+      params.push(req.user.tid);
+    }
+
+    const [result] = await db.execute(query, params);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "no trainer connection found." });
@@ -25,6 +34,9 @@ router.get("/disconnect", requireAuth, async (req, res) => {
       .status(500)
       .json({ message: "server error.", error: err.message });
   }
-});
+}
+
+router.get("/disconnect", requireAuth, disconnectTrainerConnection);
+router.delete("/disconnect", requireAuth, disconnectTrainerConnection);
 
 export default router;

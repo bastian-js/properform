@@ -13,7 +13,7 @@ router.get("/me", requireAuth, async (req, res) => {
                 SELECT t.tid, t.firstname, t.lastname, t.email
                 FROM trainer_athletes ta
                 JOIN trainers t ON ta.tid = t.tid
-                WHERE ta.uid = ?
+                WHERE ta.athlete_uid = ?
                 LIMIT 1
             `,
       [uid],

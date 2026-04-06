@@ -73,13 +73,6 @@ router.patch(
       if (action === "accept") {
         await db.query(
           `
-                INSERT INTO trainer_athletes (tid, uid, assigned_date) VALUES (?, ?, CURDATE())
-                `,
-          [tid, uid],
-        );
-
-        await db.query(
-          `
             UPDATE trainer_requests SET status = 'accepted' WHERE id = ?
             `,
           [id],

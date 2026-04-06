@@ -60,7 +60,7 @@ router.get("/me/trainer", requireAuth, async (req, res) => {
             t.phone_number
         FROM trainer_athletes ta
         JOIN trainers t ON t.tid = ta.tid
-        WHERE ta.uid = ?;
+        WHERE ta.athlete_uid = ?;
       `,
       [userId],
     );

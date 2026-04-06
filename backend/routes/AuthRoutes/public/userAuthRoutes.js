@@ -135,7 +135,7 @@ router.post("/register", async (req, res) => {
       const trainerId = trainerRows[0].tid;
 
       await connection.execute(
-        "INSERT INTO trainer_athletes (tid, uid, assigned_date) VALUES (?, ?, CURDATE())",
+        "INSERT INTO trainer_athletes (tid, athlete_uid, assigned_date) VALUES (?, ?, CURDATE())",
         [trainerId, newUserId],
       );
     }

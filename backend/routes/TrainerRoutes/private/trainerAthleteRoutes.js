@@ -21,7 +21,7 @@ router.get(
         `
         SELECT u.uid, u.firstname, u.email, u.created_at
         FROM trainer_athletes ta
-        JOIN users u ON ta.uid = u.uid
+        JOIN users u ON ta.athlete_uid = u.uid
         WHERE ta.tid = ?
         ORDER BY u.created_at DESC
         `,
