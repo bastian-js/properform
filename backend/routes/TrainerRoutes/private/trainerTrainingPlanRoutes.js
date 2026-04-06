@@ -366,6 +366,91 @@ router.post(
   },
 );
 
+router.delete(
+  "/training-plans/assign",
+  requireAuth,
+  requireRole("trainer"),
+  async (req, res) => {
+    const tid = await requireTrainerContext(req, res);
+    if (!tid) return;
+
+    const { uid, tpid, tpid_list } = req.body;
+
+    if (!uid) {
+      return res.status(400).json({ error: "uid is required." });
+    }
+
+    const planIds = Array.isArray(tpid_list)
+      ? tpid_list
+      : tpid !== undefined && tpid !== null
+        ? [tpid]
+        : [];
+
+    if (planIds.length === 0) {
+      return res.status(400).json({ error: "tpid or tpid_list is required." });
+    }
+
+    const athleteId = Number(uid);
+    if (!Number.isInteger(athleteId)) {
+      return res.status(400).json({ error: "uid must be an integer." });
+    }
+
+    try {
+      const removedPlanIds = [];
+
+      for (const rawPlanId of planIds) {
+        const planId = Number(rawPlanId);
+        if (!Number.isInteger(planId)) {
+          return res
+            .status(400)
+            .json({ error: "all tpid values must be integers." });
+        }
+
+        const [result] = await db.query(
+          `DELETE FROM user_training_plans
+           WHERE uid = ? AND tpid = ? AND assigned_by_trainer = ?`,
+          [athleteId, planId, tid],
+        );
+
+        if (result.affectedRows > 0) {
+          removedPlanIds.push(planId);
+        }
+      }
+
+      const [selectedRows] = await db.query(
+        "SELECT id FROM user_training_plans WHERE uid = ? AND is_selected = 1 LIMIT 1",
+        [athleteId],
+      );
+
+      if (selectedRows.length === 0) {
+        const [fallbackRows] = await db.query(
+          `SELECT id FROM user_training_plans
+           WHERE uid = ?
+           ORDER BY created_at DESC
+           LIMIT 1`,
+          [athleteId],
+        );
+
+        if (fallbackRows.length > 0) {
+          await db.query(
+            "UPDATE user_training_plans SET is_selected = 1 WHERE id = ? AND uid = ?",
+            [fallbackRows[0].id, athleteId],
+          );
+        }
+      }
+
+      return res.status(200).json({
+        message: "training plan unassignment completed",
+        removedCount: removedPlanIds.length,
+        removedPlanIds,
+      });
+    } catch (error) {
+      console.error("trainer training plan unassign failed.", error);
+      return res.status(500).json({ error: "internal server error." });
+    }
+  },
+);
+
 router.get(
   "/training-plans/athletes/:uid",
   requireAuth,

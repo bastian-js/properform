@@ -430,7 +430,10 @@ export default function Dashboard() {
     setSelectedAthletePlans([]);
     setActiveModal("assignTrainingPlan");
 
-    await loadAthleteTrainingPlans(athlete.uid);
+    const plans = await loadAthleteTrainingPlans(athlete.uid);
+    setSelectedTrainingPlanIds(
+      plans.map((plan: AthleteTrainingPlan) => String(plan.tpid)),
+    );
   };
 
   const toggleTrainingPlanSelection = (tpid: string) => {
@@ -650,37 +653,73 @@ export default function Dashboard() {
       return;
     }
 
-    if (selectedTrainingPlanIds.length === 0) {
-      alert("Bitte mindestens einen Trainingsplan auswählen.");
-      return;
-    }
-
     setIsAssigningTrainingPlans(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/trainers/training-plans/assign`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            uid: selectedAthlete.uid,
-            tpid_list: selectedTrainingPlanIds,
-            start_date: new Date().toISOString().slice(0, 10),
-          }),
-        },
+      const currentlyAssignedIds = selectedAthletePlans.map((plan) =>
+        String(plan.tpid),
       );
 
-      const data = await response.json();
+      const idsToAssign = selectedTrainingPlanIds.filter(
+        (tpid) => !currentlyAssignedIds.includes(tpid),
+      );
 
-      if (!response.ok) {
-        throw new Error(
-          data?.error ||
-            data?.message ||
-            "Trainingsplan konnte nicht zugewiesen werden.",
+      const idsToUnassign = currentlyAssignedIds.filter(
+        (tpid) => !selectedTrainingPlanIds.includes(tpid),
+      );
+
+      if (idsToAssign.length > 0) {
+        const assignResponse = await fetch(
+          `${API_BASE_URL}/trainers/training-plans/assign`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              uid: selectedAthlete.uid,
+              tpid_list: idsToAssign,
+              start_date: new Date().toISOString().slice(0, 10),
+            }),
+          },
         );
+
+        const assignData = await assignResponse.json();
+
+        if (!assignResponse.ok) {
+          throw new Error(
+            assignData?.error ||
+              assignData?.message ||
+              "Trainingsplan konnte nicht zugewiesen werden.",
+          );
+        }
+      }
+
+      if (idsToUnassign.length > 0) {
+        const unassignResponse = await fetch(
+          `${API_BASE_URL}/trainers/training-plans/assign`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              uid: selectedAthlete.uid,
+              tpid_list: idsToUnassign,
+            }),
+          },
+        );
+
+        const unassignData = await unassignResponse.json();
+
+        if (!unassignResponse.ok) {
+          throw new Error(
+            unassignData?.error ||
+              unassignData?.message ||
+              "Trainingsplan konnte nicht entfernt werden.",
+          );
+        }
       }
 
       await fetchTrainingPlans(token);
