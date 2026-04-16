@@ -6,17 +6,13 @@ layout: two-cols
 
 Die öffentliche **ProPerform Website** ist das digitale Aushängeschild der Plattform.
 
-<br/>
-
-**Inhalte der Homepage:**
+<div class="mt-3 mb-1 font-bold">Inhalte der Homepage:</div>
 
 - **Hero-Bereich** mit Kernaussage & Call-to-Action
 - **Was ist ProPerform?** – Funktionsübersicht für Besucher
 - **Über uns** – Das Team hinter ProPerform
 - **Bewertungen & Testimonials** zufriedener Nutzer
 - **Download-Bereich** für die Mobile App
-
-<br/>
 
 **Ziel:** Neue Nutzer gewinnen & Vertrauen aufbauen
 

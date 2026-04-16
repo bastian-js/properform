@@ -6,16 +6,12 @@ layout: two-cols
 
 Automatisierter E-Mail-Versand für wichtige Nutzeraktionen direkt vom Backend aus.
 
-<br/>
-
-**Einsatzgebiete:**
+<div class="mt-3 mb-1 font-bold">Einsatzgebiete:</div>
 
 - Registrierungsbestätigung nach dem Sign-up
 - Passwort-Reset via E-Mail-Link
 
-<br/>
-
-**Weitere Backend-Features:**
+<div class="mt-3 mb-1 font-bold">Weitere Backend-Features:</div>
 
 - **Rollenbasierte Zugriffssteuerung** (Athlet vs. Trainer)
 - **Datei-Upload** für Übungsvideos

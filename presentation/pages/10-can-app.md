@@ -6,7 +6,6 @@ layout: two-cols
 
 Die Mobile App ist das **Herzstück von ProPerform** – der tägliche Begleiter für Athleten auf iOS und Android.
 
-<br/>
 
 **Kernfunktionen der App:**
 
@@ -16,7 +15,6 @@ Die Mobile App ist das **Herzstück von ProPerform** – der tägliche Begleiter
 - Übungen mit Videos & Beschreibungen
 - Push-Benachrichtigungen
 
-<br/>
 
 **Tech Stack:**
 

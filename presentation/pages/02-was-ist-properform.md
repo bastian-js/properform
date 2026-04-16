@@ -6,7 +6,6 @@ layout: two-cols
 
 ProPerform ist eine **plattformübergreifende Fitness- & Tracking-App**, die Nutzer dabei unterstützt, ihre sportlichen Ziele effizient zu erreichen.
 
-<br/>
 
 **Kernfunktionen:**
 

@@ -6,18 +6,14 @@ layout: two-cols
 
 Das Backend stellt alle Daten der Applikation strukturiert über eine **REST API** bereit.
 
-<br/>
-
-**Kernaufgaben:**
+<div class="mt-3 mb-1 font-bold">Kernaufgaben:</div>
 
 - Bereitstellung aller Daten für die Mobile App (Übungen, Trainingspläne, Statistiken)
 - CRUD-Endpunkte zum **Erstellen, Lesen, Aktualisieren und Löschen** von Ressourcen
 - Datenbankanbindung & Verwaltung der Datenbankstruktur
 - Saubere Trennung von Routen, Controllern und Datenbanklogik
 
-<br/>
-
-**Tech Stack:**
+<div class="mt-3 mb-1 font-bold">Tech Stack:</div>
 
 `Node.js` · `Express.js` · `REST`
 

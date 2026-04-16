@@ -3,14 +3,18 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "slidev build",
+    "build": "slidev build --base ./",
     "dev": "slidev --open",
-    "export": "slidev export"
+    "export": "slidev export --with-clicks",
+    "present": "npx serve dist"
   },
   "dependencies": {
     "@slidev/cli": "^52.14.2",
     "@slidev/theme-default": "latest",
     "@slidev/theme-seriph": "latest",
     "vue": "^3.5.29"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.59.1"
   }
 }
