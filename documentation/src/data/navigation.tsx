@@ -173,6 +173,88 @@ export const navLinks: NavLink[] = [
             to: "/api/trainers/me",
             label: "GET /trainers/me",
           },
+          {
+            to: "/api/trainers/requests/create",
+            label: "POST /trainers/requests",
+          },
+          {
+            to: "/api/trainers/requests/:id/action",
+            label: "PATCH /trainers/requests/:id",
+          },
+          {
+            to: "/api/trainers/requests/me",
+            label: "GET /trainers/requests/me",
+          },
+          {
+            to: "/api/trainers/requests/pending",
+            label: "GET /trainers/requests/pending",
+          },
+          {
+            to: "/api/trainers/requests",
+            label: "GET /trainers/requests",
+          },
+        ],
+      },
+      {
+        label: "Trainer Exercises",
+        subLinks: [
+          {
+            to: "/api/trainers/exercises/create",
+            label: "POST /trainers/exercises",
+          },
+          {
+            to: "/api/trainers/exercises/:eid/update",
+            label: "PUT /trainers/exercises/:eid",
+          },
+          {
+            to: "/api/trainers/exercises/:eid/delete",
+            label: "DELETE /trainers/exercises/:eid",
+          },
+        ],
+      },
+      {
+        label: "Trainer Training Plans",
+        subLinks: [
+          {
+            to: "/api/trainers/training-plans",
+            label: "GET /trainers/training-plans",
+          },
+          {
+            to: "/api/trainers/training-plans/create",
+            label: "POST /trainers/training-plans",
+          },
+          {
+            to: "/api/trainers/training-plans/:tpid/update",
+            label: "PUT /trainers/training-plans/:tpid",
+          },
+          {
+            to: "/api/trainers/training-plans/:tpid/delete",
+            label: "DELETE /trainers/training-plans/:tpid",
+          },
+          {
+            to: "/api/trainers/training-plans/assign",
+            label: "POST /trainers/training-plans/assign",
+          },
+          {
+            to: "/api/trainers/training-plans/unassign",
+            label: "DELETE /trainers/training-plans/assign",
+          },
+          {
+            to: "/api/trainers/training-plans/athletes/:uid",
+            label: "GET /trainers/training-plans/athletes/:uid",
+          },
+          {
+            to: "/api/trainers/training-plans/:tpid/exercises",
+            label: "GET /trainers/training-plans/:tpid/exercises",
+          },
+          {
+            to: "/api/trainers/training-plans/:tpid/exercises/add",
+            label: "POST /trainers/training-plans/:tpid/exercises",
+          },
+          {
+            to: "/api/trainers/training-plans/:tpid/exercises/:id/delete",
+            label: "DELETE /trainers/training-plans/:tpid/exercises/:id",
+          },
         ],
       },
       {
@@ -196,6 +278,15 @@ export const navLinks: NavLink[] = [
           {
             to: "/api/admin/notifications",
             label: "GET /admin/notifications",
+          },
+        ],
+      },
+      {
+        label: "Admin",
+        subLinks: [
+          {
+            to: "/api/admin/users/:idOrName",
+            label: "GET /admin/users/:idOrName",
           },
         ],
       },

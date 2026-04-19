@@ -5,6 +5,7 @@ import PostExercisesCreate from "./pages/api-reference/admin/post-exercise-creat
 import PutExercisesEid from "./pages/api-reference/admin/put-exercise-eid";
 import GetMuscleGroups from "./pages/api-reference/admin/get-exercises-muscle-groups";
 import GetNotifications from "./pages/api-reference/admin/get-notifications";
+import GetAdminUsersIdOrName from "./pages/api-reference/admin/get-admin-users-id-or-name";
 
 // auth
 import PostAdminLogin from "./pages/api-reference/auth/post-admin-login";
@@ -23,6 +24,7 @@ import PostRegisterTrainer from "./pages/api-reference/auth/post-register-traine
 
 // exercises
 import GetExercises from "./pages/api-reference/exercises/get-exercises";
+import GetExercisesEidPublic from "./pages/api-reference/exercises/get-exercises-eid";
 
 // media
 import DeleteMediaMid from "./pages/api-reference/media/delete-media-mid";
@@ -44,6 +46,24 @@ import GetMyTrainer from "./pages/api-reference/trainers/get-trainer-me";
 import RegenerateTrainerCode from "./pages/api-reference/trainers/patch-trainers-regen-code";
 import CheckInviteCode from "./pages/api-reference/trainers/post-trainer-check-inv-code";
 import PostTrainersConnect from "./pages/api-reference/trainers/post-trainers-connect";
+import PostTrainersRequests from "./pages/api-reference/trainers/post-trainers-requests";
+import PatchTrainersRequestsId from "./pages/api-reference/trainers/patch-trainers-requests-id";
+import GetTrainersRequestsMe from "./pages/api-reference/trainers/get-trainers-requests-me";
+import GetTrainersRequestsPending from "./pages/api-reference/trainers/get-trainers-requests-pending";
+import GetTrainersRequests from "./pages/api-reference/trainers/get-trainers-requests";
+import PostTrainersExercises from "./pages/api-reference/trainers/post-trainers-exercises";
+import PutTrainersExercisesEid from "./pages/api-reference/trainers/put-trainers-exercises-eid";
+import DeleteTrainersExercisesEid from "./pages/api-reference/trainers/delete-trainers-exercises-eid";
+import GetTrainersTrainingPlans from "./pages/api-reference/trainers/get-trainers-training-plans";
+import PostTrainersTrainingPlans from "./pages/api-reference/trainers/post-trainers-training-plans";
+import PutTrainersTrainingPlansTpid from "./pages/api-reference/trainers/put-trainers-training-plans-tpid";
+import DeleteTrainersTrainingPlansTpid from "./pages/api-reference/trainers/delete-trainers-training-plans-tpid";
+import PostTrainersTrainingPlansAssign from "./pages/api-reference/trainers/post-trainers-training-plans-assign";
+import DeleteTrainersTrainingPlansAssign from "./pages/api-reference/trainers/delete-trainers-training-plans-assign";
+import GetTrainersTrainingPlansAthletesUid from "./pages/api-reference/trainers/get-trainers-training-plans-athletes-uid";
+import GetTrainersTrainingPlansTpidExercises from "./pages/api-reference/trainers/get-trainers-training-plans-tpid-exercises";
+import PostTrainersTrainingPlansTpidExercises from "./pages/api-reference/trainers/post-trainers-training-plans-tpid-exercises";
+import DeleteTrainersTrainingPlansTpidExercisesId from "./pages/api-reference/trainers/delete-trainers-training-plans-tpid-exercises-id";
 
 // users
 import DeleteUsersUid from "./pages/api-reference/users/delete-users-uid";
@@ -160,8 +180,33 @@ export const apiRoutes = [
   },
   { path: "api/trainers/me", element: <GetMyTrainer /> },
 
+  // trainer requests
+  { path: "api/trainers/requests/me", element: <GetTrainersRequestsMe /> },
+  { path: "api/trainers/requests/pending", element: <GetTrainersRequestsPending /> },
+  { path: "api/trainers/requests", element: <GetTrainersRequests /> },
+  { path: "api/trainers/requests/create", element: <PostTrainersRequests /> },
+  { path: "api/trainers/requests/:id/action", element: <PatchTrainersRequestsId /> },
+
+  // trainer exercises
+  { path: "api/trainers/exercises/create", element: <PostTrainersExercises /> },
+  { path: "api/trainers/exercises/:eid/update", element: <PutTrainersExercisesEid /> },
+  { path: "api/trainers/exercises/:eid/delete", element: <DeleteTrainersExercisesEid /> },
+
+  // trainer training plans
+  { path: "api/trainers/training-plans", element: <GetTrainersTrainingPlans /> },
+  { path: "api/trainers/training-plans/create", element: <PostTrainersTrainingPlans /> },
+  { path: "api/trainers/training-plans/:tpid/update", element: <PutTrainersTrainingPlansTpid /> },
+  { path: "api/trainers/training-plans/:tpid/delete", element: <DeleteTrainersTrainingPlansTpid /> },
+  { path: "api/trainers/training-plans/assign", element: <PostTrainersTrainingPlansAssign /> },
+  { path: "api/trainers/training-plans/unassign", element: <DeleteTrainersTrainingPlansAssign /> },
+  { path: "api/trainers/training-plans/athletes/:uid", element: <GetTrainersTrainingPlansAthletesUid /> },
+  { path: "api/trainers/training-plans/:tpid/exercises", element: <GetTrainersTrainingPlansTpidExercises /> },
+  { path: "api/trainers/training-plans/:tpid/exercises/add", element: <PostTrainersTrainingPlansTpidExercises /> },
+  { path: "api/trainers/training-plans/:tpid/exercises/:id/delete", element: <DeleteTrainersTrainingPlansTpidExercisesId /> },
+
   // exercises
   { path: "api/exercises", element: <GetExercises /> },
+  { path: "api/exercises/:eid", element: <GetExercisesEidPublic /> },
   { path: "api/admin/exercises/create", element: <PostExercisesCreate /> },
   { path: "api/admin/exercises/:eid", element: <GetExercisesEid /> },
   {
@@ -188,6 +233,7 @@ export const apiRoutes = [
   { path: "api/notifications/me", element: <GetNotificationsMe /> },
   { path: "api/admin/notifications/send", element: <PostNotificationsSend /> },
   { path: "api/admin/notifications", element: <GetNotifications /> },
+  { path: "api/admin/users/:idOrName", element: <GetAdminUsersIdOrName /> },
 
   // system
   { path: "api/system/health", element: <GetHealth /> },
