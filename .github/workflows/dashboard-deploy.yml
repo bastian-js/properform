@@ -29,6 +29,7 @@ jobs:
         with:
           host: ${{ secrets.DOCS_SSH_HOST }}
           username: ${{ secrets.DOCS_SSH_USER }}
+          port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.DOCS_SSH_KEY }}
           source: "dashboard/dist/*"
           target: ${{ secrets.DASH_PATH }}
