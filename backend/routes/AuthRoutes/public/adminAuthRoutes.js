@@ -39,7 +39,7 @@ router.post(
 
 router.post(
   "/admin/login",
-  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 5 }),
+  createRateLimiter({ windowMs: 15 * 60 * 1000, max: 15 }),
   async (req, res) => {
     const { email, password } = req.body;
 
