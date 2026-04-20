@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #0a0a0a;
+  color: white;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.pf-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1f3a8a;
+  box-shadow: 0 0 8px 2px rgba(31, 58, 138, 0.6);
+  flex-shrink: 0;
+}
